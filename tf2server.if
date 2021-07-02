@@ -1,0 +1,41 @@
+## <summary>policy for tf2server</summary>
+
+########################################
+## <summary>
+##	Execute tf2server_exec_t in the tf2server domain.
+## </summary>
+## <param name="domain">
+## <summary>
+##	Domain allowed to transition.
+## </summary>
+## </param>
+#
+interface(`tf2server_domtrans',`
+	gen_require(`
+		type tf2server_t, tf2server_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	domtrans_pattern($1, tf2server_exec_t, tf2server_t)
+')
+
+######################################
+## <summary>
+##	Execute tf2server in the caller domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`tf2server_exec',`
+	gen_require(`
+		type tf2server_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	can_exec($1, tf2server_exec_t)
+')
+
+

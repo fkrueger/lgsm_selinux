@@ -1,0 +1,17 @@
+[Unit]
+Description=LinuxGSM TF2 Server
+After=network-online.target opt.mount
+Wants=network-online.target opt.mount
+
+[Service]
+Type=forking
+User=tf2server
+WorkingDirectory=/opt/tf2server
+#Assume that the service is running after main process exits with code 0
+RemainAfterExit=yes
+ExecStart=/opt/tf2server/tf2server start
+ExecStop=/opt/tf2server/tf2server stop
+Restart=no
+
+[Install]
+WantedBy=multi-user.target

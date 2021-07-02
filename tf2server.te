@@ -1,0 +1,416 @@
+policy_module(tf2server, 20210619.1.1)
+
+# vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
+
+########################################
+#
+# Declarations
+#
+
+require {
+  type system_cronjob_t;
+  type unconfined_t;
+  class dir { add_name create getattr search write };
+  class file { create getattr write };
+}
+
+type tf2server_t;
+type tf2server_exec_t;
+type tf2server_home_dir_t;
+type tf2server_home_t;
+type tf2server_lgsm_t;
+type tf2server_lgsm_cfg_t;
+type tf2server_lgsm_data_t;
+type tf2server_lgsm_func_t;
+type tf2server_lgsm_lock_dir_t;
+type tf2server_lgsm_lock_t;
+type tf2server_bin_t;
+type tf2server_bin_execmod_t;
+type tf2server_log_t;
+type tf2server_other_t;
+type tf2server_other_bin_t;
+type tf2server_other_dir_t;
+type tf2server_other_rw_t;
+type tf2server_steamapps_bin_t;
+type tf2server_steamapps_workshop_t;
+type tf2server_steamapps_t;
+type tf2server_steamcmd_t;
+type tf2server_steamcmd_sdk_t;
+type tf2server_steamcmd_local_t;
+type tf2server_steamcmd_local_log_t;
+type tf2server_tf_bin_execmod_t;
+type tf2server_tf_bin_t;
+type tf2server_tf_addons_dir_t;
+type tf2server_tf_addons_t;
+type tf2server_tf_addons_execmod_t;
+type tf2server_tf_addons_log_t;
+type tf2server_tf_addons_rw_t;
+type tf2server_tf_cfg_dir_t;
+type tf2server_tf_cfg_t;
+type tf2server_tf_cfg_sourcemod_t;
+type tf2server_tf_custom_t;
+type tf2server_tf_download_t;
+type tf2server_tf_downloadlists_t;
+type tf2server_tf_maps_t;
+type tf2server_tmp_dir_t;
+type tf2server_tmp_t;
+
+
+
+#============= system_cronjob_t ==============
+search_dirs_pattern(system_cronjob_t, tf2server_bin_t, tf2server_bin_t)
+getattr_dirs_pattern(system_cronjob_t, tf2server_home_dir_t, tf2server_home_dir_t)
+#search_dirs_pattern(system_cronjob_t, tf2server_other_t, tf2server_other_t)
+search_dirs_pattern(system_cronjob_t, tf2server_tf_addons_dir_t, tf2server_tf_addons_dir_t)
+#search_dirs_pattern(system_cronjob_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+search_dirs_pattern(system_cronjob_t, tf2server_tf_bin_t, tf2server_tf_bin_t)
+
+getattr_files_pattern(system_cronjob_t, tf2server_bin_execmod_t, tf2server_bin_execmod_t)
+getattr_files_pattern(system_cronjob_t, tf2server_tf_addons_execmod_t, tf2server_tf_addons_execmod_t)
+getattr_files_pattern(system_cronjob_t, tf2server_tf_addons_log_t, tf2server_tf_addons_log_t)
+getattr_files_pattern(system_cronjob_t, tf2server_tf_addons_rw_t, tf2server_tf_addons_rw_t)
+getattr_files_pattern(system_cronjob_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+getattr_files_pattern(system_cronjob_t, tf2server_tf_bin_execmod_t, tf2server_tf_bin_execmod_t)
+getattr_files_pattern(system_cronjob_t, tf2server_other_t, tf2server_other_t)
+getattr_files_pattern(system_cronjob_t, tf2server_other_bin_t, tf2server_other_bin_t)
+getattr_files_pattern(system_cronjob_t, tf2server_other_rw_t, tf2server_other_rw_t)
+
+
+
+
+dontaudit unconfined_t tf2server_lgsm_cfg_t:file relabelfrom;
+
+
+tunable_policy(`tf2server_allow_coredumps_in_tmp',`',`
+    files_manage_generic_tmp_dirs(tf2server_t)
+')
+
+
+## <desc>
+## <p>
+## Allow tf2-server to write its coredumps into system /tmp
+## </p>
+## </desc>
+gen_tunable(tf2server_allow_coredumps_in_tmp, false)
+
+
+
+
+## debug script:
+# echo "XX0"; audit2allow -Ri /var/log/audit/audit.log   > /root/x; vi /root/x
+# echo "XX1"; make -f /usr/share/selinux/devel/Makefile
+# echo "XX2"; semanage port -d -p udp 27005-27024 ; semanage fcontext -d '/home/tf2server(-[0-9]+)?/.local/share/Steam(/.*)?'; semanage fcontext -d '/home/tf2server(-[0-9]+)?/.steam(/.*)?'; semodule -r mytf2server
+# echo "XX3"; semodule -i /root/selinux/mytf2server/mytf2server.pp ; semanage port -a -t tf2server_port_t -p udp 27005-27024 ; semanage fcontext -a -e '/opt/tf2server(-[0-9]+)?/.local/share/Steam(/.*?)' '/home/tf2server(-[0-9]+)?/.local/share/Steam(/.*)?' ; semanage fcontext -a -e '/opt/tf2server(-[0-9]+)?/.steam(/.*)?' '/home/tf2server(-[0-9]+)?/.steam(/.*)?' ; restorecon -vR /opt/tf2server/ /home/tf2server/
+# echo "XX4"; service tf2server stop; rm -f /var/log/audit/audit.log ; service auditd restart; service tf2server start
+##
+
+## XXX home-dir stuff like ~/.steam/ and ~/.local/ must be added manually or by RPM's postinstall section.
+
+
+## init + proc trans
+allow init_t tf2server_home_dir_t:dir search;
+init_daemon_domain(tf2server_t, tf2server_exec_t)
+
+#domtrans_pattern(unconfined_t, tf2server_exec_t, tf2server_t)
+
+#filetrans_pattern(tf2server_t, tf2server_tmp_dir_t, tf2server_tmp_t, file)
+#permissive tf2server_t;
+
+#
+fs_associate(tf2server_home_t)
+fs_associate(tf2server_lgsm_t)
+fs_associate(tf2server_lgsm_cfg_t)
+fs_associate(tf2server_lgsm_data_t)
+fs_associate(tf2server_lgsm_func_t)
+fs_associate(tf2server_lgsm_lock_t)
+fs_associate(tf2server_other_t)
+fs_associate(tf2server_steamapps_t)
+fs_associate(tf2server_steamapps_workshop_t)
+fs_associate(tf2server_tf_addons_t)
+fs_associate(tf2server_tf_addons_log_t)
+fs_associate(tf2server_tf_cfg_t)
+fs_associate(tf2server_tf_cfg_sourcemod_t)
+fs_associate(tf2server_tf_custom_t)
+fs_associate(tf2server_tf_download_t)
+fs_associate(tf2server_tf_downloadlists_t)
+fs_associate(tf2server_tf_maps_t)
+
+kernel_read_all_proc(tf2server_t)
+
+allow tf2server_t self:process { execmem setsched };
+
+allow tf2server_t self:tcp_socket shutdown;
+allow tf2server_t self:netlink_route_socket { bind create getattr nlmsg_read setopt read write };
+allow tf2server_t self:tcp_socket { accept bind connect create getattr getopt listen setopt };
+allow tf2server_t self:udp_socket { bind connect create getattr getopt ioctl setopt };
+
+# tf2 ports: 27005,27015,27020 -> 27005,27019,27024 (semanage port -a -t tf2server_port_t -p tcp 27005-27024; semanage port -a -t tf2server_port_t -p udp 27005-27024)
+type tf2server_port_t;
+corenet_port(tf2server_port_t)
+
+
+########################################
+#
+# tf2server local policy
+#
+allow tf2server_t self:fifo_file rw_fifo_file_perms;
+allow tf2server_t self:unix_stream_socket create_stream_socket_perms;
+
+domain_use_interactive_fds(tf2server_t)
+files_read_etc_files(tf2server_t)
+miscfiles_read_localization(tf2server_t)
+ipa_filetrans_named_content(tf2server_t)
+
+corenet_tcp_connect_mongod_port(tf2server_t)
+
+## home
+manage_files_pattern(tf2server_t, tf2server_home_dir_t, tf2server_home_t)
+read_lnk_files_pattern(tf2server_t, tf2server_home_t, tf2server_home_t)
+rename_dirs_pattern(tf2server_t, tf2server_home_t, tf2server_home_t)
+
+
+## logging
+logging_log_file(tf2server_log_t)
+logging_search_logs(tf2server_log_t)
+#filetrans_pattern(tf2server_t, tf2server_log_t, tf2server_log_t, file)
+read_lnk_files_pattern(tf2server_t, tf2server_log_t, tf2server_log_t)
+rw_files_pattern(tf2server_t, tf2server_log_t, tf2server_log_t)
+manage_files_pattern(tf2server_t, tf2server_log_t, tf2server_log_t)
+
+list_dirs_pattern(tf2server_t, tf2server_bin_t, tf2server_bin_t)
+read_files_pattern(tf2server_t, tf2server_bin_t, tf2server_bin_t)
+read_lnk_files_pattern(tf2server_t, tf2server_bin_t, tf2server_bin_t)
+exec_files_pattern(tf2server_t, tf2server_bin_t, tf2server_bin_t)
+
+list_dirs_pattern(tf2server_t, tf2server_bin_execmod_t, tf2server_bin_execmod_t)
+read_files_pattern(tf2server_t, tf2server_bin_execmod_t, tf2server_bin_execmod_t)
+exec_files_pattern(tf2server_t, tf2server_bin_execmod_t, tf2server_bin_execmod_t)
+
+filetrans_pattern(tf2server_t, tf2server_tf_addons_dir_t, tf2server_tf_addons_t, file)
+list_dirs_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+manage_files_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_addons_rw_t, tf2server_tf_addons_rw_t)
+rw_dirs_pattern(tf2server_t, tf2server_tf_addons_rw_t, tf2server_tf_addons_rw_t)
+manage_files_pattern(tf2server_t, tf2server_tf_addons_rw_t, tf2server_tf_addons_rw_t)
+
+read_files_pattern(tf2server_t, tf2server_tf_addons_execmod_t, tf2server_tf_addons_execmod_t)
+exec_files_pattern(tf2server_t, tf2server_tf_addons_execmod_t, tf2server_tf_addons_execmod_t)
+allow tf2server_t tf2server_tf_addons_execmod_t:dir getattr_file_perms;
+
+list_dirs_pattern(tf2server_t, tf2server_tf_bin_t, tf2server_tf_bin_t)
+read_files_pattern(tf2server_t, tf2server_tf_bin_t, tf2server_tf_bin_t)
+exec_files_pattern(tf2server_t, tf2server_tf_bin_t, tf2server_tf_bin_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_bin_execmod_t, tf2server_tf_bin_execmod_t)
+read_files_pattern(tf2server_t, tf2server_tf_bin_execmod_t, tf2server_tf_bin_execmod_t)
+exec_files_pattern(tf2server_t, tf2server_tf_bin_execmod_t, tf2server_tf_bin_execmod_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_cfg_t, tf2server_tf_cfg_t)
+read_files_pattern(tf2server_t, tf2server_tf_cfg_t, tf2server_tf_cfg_t)
+read_lnk_files_pattern(tf2server_t, tf2server_tf_cfg_t, tf2server_tf_cfg_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_downloadlists_t, tf2server_tf_downloadlists_t)
+rw_dirs_pattern(tf2server_t, tf2server_tf_downloadlists_t, tf2server_tf_downloadlists_t)
+manage_files_pattern(tf2server_t, tf2server_tf_downloadlists_t, tf2server_tf_downloadlists_t)
+
+# XXX addon configurations to read and write by tf2
+list_dirs_pattern(tf2server_t, tf2server_tf_cfg_sourcemod_t, tf2server_tf_cfg_sourcemod_t)
+rw_dirs_pattern(tf2server_t, tf2server_tf_cfg_sourcemod_t, tf2server_tf_cfg_sourcemod_t)
+manage_files_pattern(tf2server_t, tf2server_tf_cfg_sourcemod_t, tf2server_tf_cfg_sourcemod_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_custom_t, tf2server_tf_custom_t)
+read_files_pattern(tf2server_t, tf2server_tf_custom_t, tf2server_tf_custom_t)
+
+list_dirs_pattern(tf2server_t, tf2server_home_t, tf2server_home_t)
+read_files_pattern(tf2server_t, tf2server_home_t, tf2server_home_t)
+
+list_dirs_pattern(tf2server_t, tf2server_lgsm_t, tf2server_lgsm_t)
+read_files_pattern(tf2server_t, tf2server_lgsm_t, tf2server_lgsm_t)
+exec_files_pattern(tf2server_t, tf2server_lgsm_t, tf2server_lgsm_t)
+
+list_dirs_pattern(tf2server_t, tf2server_lgsm_cfg_t, tf2server_lgsm_cfg_t)
+read_files_pattern(tf2server_t, tf2server_lgsm_cfg_t, tf2server_lgsm_cfg_t)
+allow tf2server_t tf2server_lgsm_cfg_t:dir getattr_file_perms;
+
+list_dirs_pattern(tf2server_t, tf2server_lgsm_data_t, tf2server_lgsm_data_t)
+read_files_pattern(tf2server_t, tf2server_lgsm_data_t, tf2server_lgsm_data_t)
+allow tf2server_t tf2server_lgsm_data_t:dir getattr_file_perms;
+
+allow tf2server_t tf2server_lgsm_func_t:dir getattr_dir_perms;
+list_dirs_pattern(tf2server_t, tf2server_lgsm_func_t, tf2server_lgsm_func_t)
+read_files_pattern(tf2server_t, tf2server_lgsm_func_t, tf2server_lgsm_func_t)
+rw_files_pattern(tf2server_t, tf2server_lgsm_func_t, tf2server_lgsm_func_t)
+create_files_pattern(tf2server_t, tf2server_lgsm_func_t, tf2server_lgsm_func_t)
+exec_files_pattern(tf2server_t, tf2server_lgsm_func_t, tf2server_lgsm_func_t)
+
+list_dirs_pattern(tf2server_t, tf2server_lgsm_lock_t, tf2server_lgsm_lock_t)
+add_entry_dirs_pattern(tf2server_t, tf2server_lgsm_lock_t, tf2server_lgsm_lock_t)
+delete_dirs_pattern(tf2server_t, tf2server_lgsm_lock_t, tf2server_lgsm_lock_t)
+create_files_pattern(tf2server_t, tf2server_lgsm_lock_t, tf2server_lgsm_lock_t)
+
+read_files_pattern(tf2server_t, tf2server_lgsm_lock_t, tf2server_lgsm_lock_t)
+create_files_pattern(tf2server_t, tf2server_lgsm_lock_t, tf2server_lgsm_lock_t)
+delete_files_pattern(tf2server_t, tf2server_lgsm_lock_t, tf2server_lgsm_lock_t)
+rw_files_pattern(tf2server_t,   tf2server_lgsm_lock_t, tf2server_lgsm_lock_t)
+
+filetrans_pattern(tf2server_t, tf2server_lgsm_lock_dir_t, tf2server_lgsm_lock_t, file)
+
+list_dirs_pattern(tf2server_t, tf2server_tmp_dir_t, tf2server_tmp_dir_t)
+read_files_pattern(tf2server_t, tf2server_tmp_dir_t, tf2server_tmp_t)
+rw_files_pattern(tf2server_t,   tf2server_tmp_dir_t, tf2server_tmp_t)
+
+allow tf2server_t tf2server_other_t:dir getattr_dir_perms;
+list_dirs_pattern(tf2server_t, tf2server_other_t, tf2server_other_t)
+read_files_pattern(tf2server_t, tf2server_other_t, tf2server_other_t)
+exec_files_pattern(tf2server_t, tf2server_other_t, tf2server_other_t)
+
+list_dirs_pattern(tf2server_t, tf2server_other_bin_t, tf2server_other_bin_t)
+read_files_pattern(tf2server_t, tf2server_other_bin_t, tf2server_other_bin_t)
+exec_files_pattern(tf2server_t, tf2server_other_bin_t, tf2server_other_bin_t)
+
+manage_files_pattern(tf2server_t, tf2server_other_rw_t, tf2server_other_rw_t)
+
+list_dirs_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_t)
+read_files_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_t)
+rw_files_pattern(tf2server_t,   tf2server_steamapps_t, tf2server_steamapps_t)
+
+list_dirs_pattern(tf2server_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
+read_files_pattern(tf2server_t, tf2server_steamcmd_t,  tf2server_steamcmd_t)
+read_lnk_files_pattern(tf2server_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
+exec_files_pattern(tf2server_t, tf2server_steamcmd_t,  tf2server_steamcmd_t)
+
+list_dirs_pattern(tf2server_t, tf2server_steamcmd_sdk_t, tf2server_steamcmd_sdk_t)
+read_files_pattern(tf2server_t, tf2server_steamcmd_sdk_t,  tf2server_steamcmd_sdk_t)
+read_lnk_files_pattern(tf2server_t, tf2server_steamcmd_sdk_t, tf2server_steamcmd_sdk_t)
+
+list_dirs_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_workshop_t)
+manage_dirs_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_workshop_t)
+manage_files_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_workshop_t)
+create_files_pattern(tf2server_t, tf2server_steamapps_workshop_t, tf2server_steamapps_workshop_t)
+rw_files_pattern(tf2server_t, tf2server_steamapps_workshop_t, tf2server_steamapps_workshop_t)
+
+list_dirs_pattern(tf2server_t, tf2server_steamcmd_local_t, tf2server_steamcmd_local_t)
+read_files_pattern(tf2server_t, tf2server_steamcmd_local_t, tf2server_steamcmd_local_t)
+
+manage_files_pattern(tf2server_t, tf2server_steamcmd_local_log_t, tf2server_steamcmd_local_log_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+read_files_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+exec_files_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_addons_log_t, tf2server_tf_addons_log_t)
+manage_files_pattern(tf2server_t, tf2server_tf_addons_log_t, tf2server_tf_addons_log_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_download_t, tf2server_tf_download_t)
+manage_dirs_pattern(tf2server_t, tf2server_tf_download_t, tf2server_tf_download_t)
+manage_files_pattern(tf2server_t, tf2server_tf_download_t, tf2server_tf_download_t)
+rw_files_pattern(tf2server_t, tf2server_tf_download_t, tf2server_tf_download_t)
+
+manage_files_pattern(tf2server_t, tf2server_tf_maps_t, tf2server_tf_maps_t)
+rw_files_pattern(tf2server_t, tf2server_tf_maps_t, tf2server_tf_maps_t)
+
+list_dirs_pattern(tf2server_t, tf2server_steamapps_bin_t, tf2server_steamapps_bin_t)
+read_files_pattern(tf2server_t, tf2server_steamapps_bin_t, tf2server_steamapps_bin_t)
+exec_files_pattern(tf2server_t, tf2server_steamapps_bin_t, tf2server_steamapps_bin_t)
+
+
+list_dirs_pattern(tf2server_t, tf2server_tmp_t, tf2server_tmp_t)
+rw_dirs_pattern(tf2server_t, tf2server_tmp_t, tf2server_tmp_t)
+read_files_pattern(tf2server_t, tf2server_tmp_t, tf2server_tmp_t)
+rw_files_pattern(tf2server_t, tf2server_tmp_t, tf2server_tmp_t)
+
+
+## other stuff
+screen_exec(tf2server_t)
+term_use_generic_ptys(tf2server_t)
+term_use_ptmx(tf2server_t)
+
+userdom_manage_tmp_files(init_t)
+userdom_read_user_home_content_symlinks(init_t)
+
+
+allow tf2server_t self:unix_stream_socket connectto;
+allow tf2server_t tf2server_port_t:udp_socket name_bind;
+
+
+## XXX the following allows textrelocations -.-
+allow tf2server_t tf2server_bin_execmod_t:file execmod;
+allow tf2server_t tf2server_tf_bin_execmod_t:file execmod;
+allow tf2server_t tf2server_tf_addons_execmod_t:file execmod;
+
+## other stuff
+auth_read_passwd(tf2server_t)
+corecmd_exec_bin(tf2server_t)
+corecmd_exec_shell(tf2server_t)
+corenet_tcp_bind_generic_node(tf2server_t)
+corenet_tcp_connect_dns_port(tf2server_t)
+corenet_tcp_connect_http_port(tf2server_t)
+corenet_udp_bind_generic_node(tf2server_t)
+dbus_read_lib_files(tf2server_t)
+dev_list_sysfs(tf2server_t)
+dev_read_sysfs(tf2server_t)
+files_list_home(tf2server_t)
+fs_getattr_xattr_fs(tf2server_t)
+gnome_manage_data(tf2server_t)
+gnome_read_generic_data_home_dirs(tf2server_t)
+init_read_state(tf2server_t)
+init_read_utmp(tf2server_t)
+miscfiles_read_generic_certs(tf2server_t)
+nis_use_ypbind_uncond(tf2server_t)
+
+# yum/dnf/rpm
+rpm_delete_db(tf2server_t)
+rpm_exec(tf2server_t)
+rpm_manage_db(tf2server_t)
+
+# tmux/screen
+screen_exec(tf2server_t)
+
+# auth
+sssd_read_public_files(tf2server_t)
+sssd_run_stream_connect(tf2server_t)
+sssd_search_lib(tf2server_t)
+sssd_stream_connect(tf2server_t)
+
+# net
+sysnet_exec_ifconfig(tf2server_t)
+sysnet_read_config(tf2server_t)
+
+# virtual terminals / tmux / screen
+term_getattr_pty_fs(tf2server_t)
+term_use_generic_ptys(tf2server_t)
+term_use_ptmx(tf2server_t)
+
+# tmp files
+userdom_manage_tmp_dirs(tf2server_t)
+userdom_manage_tmp_files(tf2server_t)
+userdom_manage_tmp_sockets(tf2server_t)
+
+# homedir shit.. it sucks.
+files_manage_usr_files(tf2server_t)
+userdom_list_user_home_dirs(tf2server_t)
+
+# homedir shit, that really sucks.
+userdom_manage_user_home_content_dirs(tf2server_t)
+userdom_read_user_home_content_symlinks(tf2server_t)
+
+# homedir shit, execmod-style..
+list_dirs_pattern(tf2server_t, user_home_t, user_home_t)
+read_files_pattern(tf2server_t, user_home_t, user_home_t)
+read_lnk_files_pattern(tf2server_t, user_home_t, user_home_t)
+exec_files_pattern(tf2server_t, user_home_t, user_home_t)
+allow tf2server_t user_home_t:file execmod;
+
+
+### all necessary access for unconfined_t
+## dirs
+manage_dirs_pattern(unconfined_t, { tf2server_t tf2server_exec_t tf2server_home_dir_t tf2server_home_t tf2server_lgsm_t tf2server_lgsm_cfg_t tf2server_lgsm_data_t tf2server_lgsm_func_t tf2server_lgsm_lock_dir_t tf2server_lgsm_lock_t tf2server_bin_t tf2server_bin_execmod_t tf2server_log_t tf2server_other_t tf2server_other_bin_t tf2server_other_dir_t tf2server_other_rw_t tf2server_steamapps_bin_t tf2server_steamapps_workshop_t tf2server_steamapps_t tf2server_steamcmd_t tf2server_steamcmd_sdk_t tf2server_steamcmd_local_t tf2server_steamcmd_local_log_t tf2server_tf_bin_execmod_t tf2server_tf_bin_t tf2server_tf_addons_dir_t tf2server_tf_addons_t tf2server_tf_addons_execmod_t tf2server_tf_addons_log_t tf2server_tf_addons_rw_t tf2server_tf_cfg_dir_t tf2server_tf_cfg_t tf2server_tf_cfg_sourcemod_t tf2server_tf_custom_t tf2server_tf_downloadlists_t tf2server_tf_maps_t tf2server_tmp_dir_t tf2server_tmp_t tf2server_tf_custom_t tf2server_tf_download_t tf2server_tf_maps_t }, { tf2server_t tf2server_exec_t tf2server_home_dir_t tf2server_home_t tf2server_lgsm_t tf2server_lgsm_cfg_t tf2server_lgsm_data_t tf2server_lgsm_func_t tf2server_lgsm_lock_dir_t tf2server_lgsm_lock_t tf2server_bin_t tf2server_bin_execmod_t tf2server_log_t tf2server_other_t tf2server_other_bin_t tf2server_other_dir_t tf2server_other_rw_t tf2server_steamapps_bin_t tf2server_steamapps_workshop_t tf2server_steamapps_t tf2server_steamcmd_t tf2server_steamcmd_sdk_t tf2server_steamcmd_local_t tf2server_steamcmd_local_log_t tf2server_tf_bin_execmod_t tf2server_tf_bin_t tf2server_tf_addons_dir_t tf2server_tf_addons_t tf2server_tf_addons_execmod_t tf2server_tf_addons_log_t tf2server_tf_addons_rw_t tf2server_tf_cfg_dir_t tf2server_tf_cfg_t tf2server_tf_cfg_sourcemod_t tf2server_tf_custom_t tf2server_tf_downloadlists_t tf2server_tf_maps_t tf2server_tmp_dir_t tf2server_tmp_t tf2server_tf_custom_t tf2server_tf_download_t tf2server_tf_maps_t })
+## files
+exec_files_pattern(unconfined_t, { tf2server_t tf2server_exec_t tf2server_home_dir_t tf2server_home_t tf2server_lgsm_t tf2server_lgsm_cfg_t tf2server_lgsm_data_t tf2server_lgsm_func_t tf2server_lgsm_lock_dir_t tf2server_lgsm_lock_t tf2server_bin_t tf2server_bin_execmod_t tf2server_log_t tf2server_other_t tf2server_other_bin_t tf2server_other_dir_t tf2server_other_rw_t tf2server_steamapps_bin_t tf2server_steamapps_workshop_t tf2server_steamapps_t tf2server_steamcmd_t tf2server_steamcmd_sdk_t tf2server_steamcmd_local_t tf2server_steamcmd_local_log_t tf2server_tf_bin_execmod_t tf2server_tf_bin_t tf2server_tf_addons_dir_t tf2server_tf_addons_t tf2server_tf_addons_execmod_t tf2server_tf_addons_log_t tf2server_tf_addons_rw_t tf2server_tf_cfg_dir_t tf2server_tf_cfg_t tf2server_tf_cfg_sourcemod_t tf2server_tf_custom_t tf2server_tf_downloadlists_t tf2server_tf_maps_t tf2server_tmp_dir_t tf2server_tmp_t tf2server_tf_custom_t tf2server_tf_download_t tf2server_tf_maps_t }, { tf2server_t tf2server_exec_t tf2server_home_dir_t tf2server_home_t tf2server_lgsm_t tf2server_lgsm_cfg_t tf2server_lgsm_data_t tf2server_lgsm_func_t tf2server_lgsm_lock_dir_t tf2server_lgsm_lock_t tf2server_bin_t tf2server_bin_execmod_t tf2server_log_t tf2server_other_t tf2server_other_bin_t tf2server_other_dir_t tf2server_other_rw_t tf2server_steamapps_bin_t tf2server_steamapps_workshop_t tf2server_steamapps_t tf2server_steamcmd_t tf2server_steamcmd_sdk_t tf2server_steamcmd_local_t tf2server_steamcmd_local_log_t tf2server_tf_bin_execmod_t tf2server_tf_bin_t tf2server_tf_addons_dir_t tf2server_tf_addons_t tf2server_tf_addons_execmod_t tf2server_tf_addons_log_t tf2server_tf_addons_rw_t tf2server_tf_cfg_dir_t tf2server_tf_cfg_t tf2server_tf_cfg_sourcemod_t tf2server_tf_custom_t tf2server_tf_downloadlists_t tf2server_tf_maps_t tf2server_tmp_dir_t tf2server_tmp_t tf2server_tf_custom_t tf2server_tf_download_t tf2server_tf_maps_t })
+manage_files_pattern(unconfined_t, { tf2server_t tf2server_exec_t tf2server_home_dir_t tf2server_home_t tf2server_lgsm_t tf2server_lgsm_cfg_t tf2server_lgsm_data_t tf2server_lgsm_func_t tf2server_lgsm_lock_dir_t tf2server_lgsm_lock_t tf2server_bin_t tf2server_bin_execmod_t tf2server_log_t tf2server_other_t tf2server_other_bin_t tf2server_other_dir_t tf2server_other_rw_t tf2server_steamapps_bin_t tf2server_steamapps_workshop_t tf2server_steamapps_t tf2server_steamcmd_t tf2server_steamcmd_sdk_t tf2server_steamcmd_local_t tf2server_steamcmd_local_log_t tf2server_tf_bin_execmod_t tf2server_tf_bin_t tf2server_tf_addons_dir_t tf2server_tf_addons_t tf2server_tf_addons_execmod_t tf2server_tf_addons_log_t tf2server_tf_addons_rw_t tf2server_tf_cfg_dir_t tf2server_tf_cfg_t tf2server_tf_cfg_sourcemod_t tf2server_tf_custom_t tf2server_tf_downloadlists_t tf2server_tf_maps_t tf2server_tmp_dir_t tf2server_tmp_t tf2server_tf_custom_t tf2server_tf_download_t tf2server_tf_maps_t }, { tf2server_t tf2server_exec_t tf2server_home_dir_t tf2server_home_t tf2server_lgsm_t tf2server_lgsm_cfg_t tf2server_lgsm_data_t tf2server_lgsm_func_t tf2server_lgsm_lock_dir_t tf2server_lgsm_lock_t tf2server_bin_t tf2server_bin_execmod_t tf2server_log_t tf2server_other_t tf2server_other_bin_t tf2server_other_dir_t tf2server_other_rw_t tf2server_steamapps_bin_t tf2server_steamapps_workshop_t tf2server_steamapps_t tf2server_steamcmd_t tf2server_steamcmd_sdk_t tf2server_steamcmd_local_t tf2server_steamcmd_local_log_t tf2server_tf_bin_execmod_t tf2server_tf_bin_t tf2server_tf_addons_dir_t tf2server_tf_addons_t tf2server_tf_addons_execmod_t tf2server_tf_addons_log_t tf2server_tf_addons_rw_t tf2server_tf_cfg_dir_t tf2server_tf_cfg_t tf2server_tf_cfg_sourcemod_t tf2server_tf_custom_t tf2server_tf_downloadlists_t tf2server_tf_maps_t tf2server_tmp_dir_t tf2server_tmp_t tf2server_tf_custom_t tf2server_tf_download_t tf2server_tf_maps_t })
+manage_lnk_files_pattern(unconfined_t, { tf2server_t tf2server_exec_t tf2server_home_dir_t tf2server_home_t tf2server_lgsm_t tf2server_lgsm_cfg_t tf2server_lgsm_data_t tf2server_lgsm_func_t tf2server_lgsm_lock_dir_t tf2server_lgsm_lock_t tf2server_bin_t tf2server_bin_execmod_t tf2server_log_t tf2server_other_t tf2server_other_bin_t tf2server_other_dir_t tf2server_other_rw_t tf2server_steamapps_bin_t tf2server_steamapps_workshop_t tf2server_steamapps_t tf2server_steamcmd_t tf2server_steamcmd_sdk_t tf2server_steamcmd_local_t tf2server_steamcmd_local_log_t tf2server_tf_bin_execmod_t tf2server_tf_bin_t tf2server_tf_addons_dir_t tf2server_tf_addons_t tf2server_tf_addons_execmod_t tf2server_tf_addons_log_t tf2server_tf_addons_rw_t tf2server_tf_cfg_dir_t tf2server_tf_cfg_t tf2server_tf_cfg_sourcemod_t tf2server_tf_custom_t tf2server_tf_downloadlists_t tf2server_tf_maps_t tf2server_tmp_dir_t tf2server_tmp_t tf2server_tf_custom_t tf2server_tf_download_t tf2server_tf_maps_t }, { tf2server_t tf2server_exec_t tf2server_home_dir_t tf2server_home_t tf2server_lgsm_t tf2server_lgsm_cfg_t tf2server_lgsm_data_t tf2server_lgsm_func_t tf2server_lgsm_lock_dir_t tf2server_lgsm_lock_t tf2server_bin_t tf2server_bin_execmod_t tf2server_log_t tf2server_other_t tf2server_other_bin_t tf2server_other_dir_t tf2server_other_rw_t tf2server_steamapps_bin_t tf2server_steamapps_workshop_t tf2server_steamapps_t tf2server_steamcmd_t tf2server_steamcmd_sdk_t tf2server_steamcmd_local_t tf2server_steamcmd_local_log_t tf2server_tf_bin_execmod_t tf2server_tf_bin_t tf2server_tf_addons_dir_t tf2server_tf_addons_t tf2server_tf_addons_execmod_t tf2server_tf_addons_log_t tf2server_tf_addons_rw_t tf2server_tf_cfg_dir_t tf2server_tf_cfg_t tf2server_tf_cfg_sourcemod_t tf2server_tf_custom_t tf2server_tf_downloadlists_t tf2server_tf_maps_t tf2server_tmp_dir_t tf2server_tmp_t tf2server_tf_custom_t tf2server_tf_download_t tf2server_tf_maps_t })
+###
+
+
+
