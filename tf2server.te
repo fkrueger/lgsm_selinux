@@ -119,24 +119,7 @@ init_daemon_domain(tf2server_t, tf2server_exec_t)
 #filetrans_pattern(tf2server_t, tf2server_tmp_dir_t, tf2server_tmp_t, file)
 #permissive tf2server_t;
 
-#
-fs_associate(tf2server_home_t)
-fs_associate(tf2server_lgsm_t)
-fs_associate(tf2server_lgsm_cfg_t)
-fs_associate(tf2server_lgsm_data_t)
-fs_associate(tf2server_lgsm_func_t)
-fs_associate(tf2server_lgsm_lock_t)
-fs_associate(tf2server_other_t)
-fs_associate(tf2server_steamapps_t)
-fs_associate(tf2server_steamapps_workshop_t)
-fs_associate(tf2server_tf_addons_t)
-fs_associate(tf2server_tf_addons_log_t)
-fs_associate(tf2server_tf_cfg_t)
-fs_associate(tf2server_tf_cfg_sourcemod_t)
-fs_associate(tf2server_tf_custom_t)
-fs_associate(tf2server_tf_download_t)
-fs_associate(tf2server_tf_downloadlists_t)
-fs_associate(tf2server_tf_maps_t)
+fs_associate(tf2server_all_types)
 
 kernel_read_all_proc(tf2server_t)
 
@@ -434,6 +417,20 @@ manage_dirs_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
 exec_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
 manage_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
 manage_lnk_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+
+# relabelfrom:
+relabelfrom_dirs_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+relabelfrom_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+relabelfrom_fifo_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+relabelfrom_lnk_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+relabelfrom_sock_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+
+# relabelto:
+relabelto_dirs_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+relabelto_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+relabelto_fifo_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+relabelto_lnk_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+relabelto_sock_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
 ###
 
 
