@@ -8,6 +8,8 @@ policy_module(tf2server, 20210712.1.1)
 #
 
 require {
+  type ifconfig_t;
+  type ifconfig_exec_t;
   type system_cronjob_t;
   type setfiles_t;
   type unconfined_t;
@@ -113,6 +115,9 @@ gen_tunable(tf2server_allow_coredumps_in_tmp, false)
 ## init + proc trans
 allow init_t tf2server_home_dir_t:dir search;
 init_daemon_domain(tf2server_t, tf2server_exec_t)
+
+# XXX because tf2server somehow calls ethtool, which ifconfig_exec_t, and wouldn't be allowed to be call by tf2server_t without the following line:
+sysnet_domtrans_ifconfig(tf2server_t)
 
 #domtrans_pattern(unconfined_t, tf2server_exec_t, tf2server_t)
 
