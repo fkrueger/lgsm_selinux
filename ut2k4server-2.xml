@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>ut2k4server</short>
+  <description>firewalld service for UT2004 server ports</description>
+  <port port="6777" protocol="udp"/>
+  <port port="6778" protocol="udp"/>
+  <port port="6787" protocol="udp"/>
+  <port port="6788" protocol="udp"/>
+  <port port="10677" protocol="udp"/>
+  <port port="6075" protocol="tcp"/>
+</service>

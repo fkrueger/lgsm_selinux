@@ -1,0 +1,15 @@
+# firewall-cmd --new-service-from-file=/root/ut2k4server.xml --permanent
+# service firewalld reload
+# firewall-cmd --zone=public --add-service=ut2k4server --permanent
+# service firewalld reload
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>ut2k4server</short>
+  <description>firewalld service for UT2004 server ports</description>
+  <port port="7777" protocol="udp"/><!-- ut2004_gameport -->
+  <port port="7778" protocol="udp"/><!-- ut2004_gsa -->
+  <port port="7787" protocol="udp"/><!-- ut2004_mstr -->
+  <port port="7788" protocol="udp"/><!-- ut2004_query -->
+  <port port="10777" protocol="udp"/>
+  <port port="8075" protocol="tcp"/><!-- ut2004_web -->
+</service>

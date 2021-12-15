@@ -1,0 +1,2 @@
+tf2server               ALL = (tf2server) NOPASSWD: /opt/tf2server/tf2server *, NOPASSWD: /opt/tf2server-*/tf2server-* *
+

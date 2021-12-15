@@ -1,0 +1,65 @@
+## <summary>LGSM sub-policy for ut2k4server</summary>
+
+########################################
+## <summary>
+## Activate this if you want lgsm to support the ut2k4server sub-policy
+## </summary>
+## <param name="domain">
+##<summary>
+## Domain allowed access.
+##</summary>
+## </param>
+#### XXX load ONLY if ut2k4server policy is installed as well.. and add type bla; definition above:
+interface(`ut2k4server_lgsmconnect',`
+        gen_require(`
+                type ut2k4server_t, ut2k4server_anims_t, ut2k4server_exec_t, ut2k4server_help_t, ut2k4server_home_dir_t, ut2k4server_home_t, ut2k4server_karma_t, ut2k4server_log_t, ut2k4server_maps_t, ut2k4server_misc_t, ut2k4server_music_t, ut2k4server_redirect_t, ut2k4server_screenshots_t, ut2k4server_sounds_t, ut2k4server_speech_t, ut2k4server_staticmeshes_t, ut2k4server_system_antitccmd5_t, ut2k4server_system_cdkey_t, ut2k4server_system_editorres_t, ut2k4server_system_enginedat_t, ut2k4server_system_ini_t, ut2k4server_system_log_t, ut2k4server_system_mods_botconfig_t, ut2k4server_system_mods_locale_t, ut2k4server_system_mods_mutbinds_t, ut2k4server_system_mods_t, ut2k4server_system_t, ut2k4server_system_uccbin_t, ut2k4server_system_ut2k4bin_t, ut2k4server_textfiles_t, ut2k4server_textures_t, ut2k4server_tmp_dir_t, ut2k4server_tmp_t, ut2k4server_web_t, ut2k4server_winbs_t;
+        ')
+
+        define(`ut2k4server_all_types',`{ ut2k4server_t ut2k4server_anims_t ut2k4server_exec_t ut2k4server_help_t ut2k4server_home_dir_t ut2k4server_home_t ut2k4server_karma_t ut2k4server_log_t ut2k4server_maps_t ut2k4server_misc_t ut2k4server_music_t ut2k4server_redirect_t ut2k4server_screenshots_t ut2k4server_sounds_t ut2k4server_speech_t ut2k4server_staticmeshes_t ut2k4server_system_antitccmd5_t ut2k4server_system_cdkey_t ut2k4server_system_editorres_t ut2k4server_system_enginedat_t ut2k4server_system_ini_t ut2k4server_system_log_t ut2k4server_system_mods_botconfig_t ut2k4server_system_mods_locale_t ut2k4server_system_mods_mutbinds_t ut2k4server_system_mods_t ut2k4server_system_t ut2k4server_system_uccbin_t ut2k4server_system_ut2k4bin_t ut2k4server_textfiles_t ut2k4server_textures_t ut2k4server_tmp_dir_t ut2k4server_tmp_t ut2k4server_web_t ut2k4server_winbs_t }')
+
+        list_dirs_pattern($1, ut2k4server_t, ut2k4server_t)
+        read_files_pattern($1, ut2k4server_t, ut2k4server_t)
+
+        list_dirs_pattern($1, ut2k4server_log_t, ut2k4server_log_t)
+        read_files_pattern($1, ut2k4server_log_t, ut2k4server_log_t)
+        manage_files_pattern($1, ut2k4server_log_t, ut2k4server_log_t)
+
+        list_dirs_pattern($1, ut2k4server_misc_t, ut2k4server_misc_t)
+        read_files_pattern($1, ut2k4server_misc_t, ut2k4server_misc_t)
+')
+
+########################################
+## <summary>
+## Allow anyone (ok, just LGSM) to run the ut2k4server_exec_t binaries
+## </summary>
+## <param name="domain">
+##<summary>
+## Domain allowed access.
+##</summary>
+## </param>
+interface(`ut2k4server_can_exec',`
+        gen_require(`
+                type ut2k4server_t, ut2k4server_exec_t;
+        ')
+        domtrans_pattern($1, ut2k4server_exec_t, ut2k4server_t)
+')
+
+
+########################################
+## <summary>
+## Internal BS to let lgsm find out about this module being loaded.
+## </summary>
+## <param name="domain">
+##<summary>
+## Domain allowed access.
+##</summary>
+## </param>
+interface(`ut2k4server_set_loadedname',`
+        gen_require(`
+                type ut2k4server_t;
+        ')
+        define(`ut2k4server_loadedname',`ut2k4server_t')
+')
+#### /ut2k4server policy
+
+

@@ -1,0 +1,47 @@
+## <summary>LGSM base-policy</summary>
+
+########################################
+## <summary>
+## Give the *server sub-policies access to some of the lgsm files
+## </summary>
+## <param name="domain">
+##<summary>
+## Domain allowed access.
+##</summary>
+## </param>
+
+interface(`lgsm_allow_fileaccess',`
+        gen_require(`
+                type lgsm_home_dir_t;
+                type lgsm_log_t;
+                type lgsm_serverfiles_t;
+        ')
+  search_dirs_pattern($1, lgsm_home_dir_t, lgsm_home_dir_t)
+  search_dirs_pattern($1, lgsm_log_t, lgsm_log_t)
+  search_dirs_pattern($1, lgsm_serverfiles_t, lgsm_serverfiles_t)
+  list_dirs_pattern($1, lgsm_home_dir_t, lgsm_home_dir_t)
+  list_dirs_pattern($1, lgsm_serverfiles_t, lgsm_serverfiles_t)
+')
+
+########################################
+## <summary>
+## Allow lgsm to access (possibly) loaded sub-policy items
+## </summary>
+## <param name="domain">
+##<summary>
+## Domain allowed access.
+##</summary>
+## </param>
+
+interface(`lgsm_allow_servertype',`
+        gen_require(`
+		type $1;
+        ')
+  getattr_dirs_pattern(lgsm_t, $1, $1)
+  read_lnk_files_pattern(lgsm_t, $1, $1)
+  allow lgsm_t $1:process getattr;
+  allow lgsm_t $1:tcp_socket getattr;
+  allow lgsm_t $1:udp_socket getattr;
+')
+
+

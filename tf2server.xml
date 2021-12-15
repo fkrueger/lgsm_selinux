@@ -1,0 +1,27 @@
+# firewall-cmd --new-service-from-file=/root/tf2server.xml --permanent
+# service firewalld reload
+# firewall-cmd --zone=public --add-service=tf2server --permanent
+# service firewalld reload
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>tf2server</short>
+  <description>firewalld service for TF2 server ports</description>
+  <port port="27005" protocol="udp"/>
+  <port port="27015" protocol="udp"/>
+  <port port="27020" protocol="udp"/>
+  <port port="27006" protocol="udp"/>
+  <port port="27016" protocol="udp"/>
+  <port port="27021" protocol="udp"/>
+  <port port="27007" protocol="udp"/>
+  <port port="27017" protocol="udp"/>
+  <port port="27022" protocol="udp"/>
+  <port port="27005" protocol="tcp"/>
+  <port port="27015" protocol="tcp"/>
+  <port port="27020" protocol="tcp"/>
+  <port port="27006" protocol="tcp"/>
+  <port port="27016" protocol="tcp"/>
+  <port port="27021" protocol="tcp"/>
+  <port port="27007" protocol="tcp"/>
+  <port port="27017" protocol="tcp"/>
+  <port port="27022" protocol="tcp"/>
+</service>

@@ -1,0 +1,210 @@
+policy_module(ut2k4server, 20211208.1.1)
+
+# vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
+
+
+
+require {
+  type ifconfig_t;
+  type ifconfig_exec_t;
+  type logrotate_t;
+  type rpm_script_t;
+  type system_cronjob_t, system_cronjob_tmp_t;
+  type systemd_coredump_t;
+  type setfiles_t;
+  type unconfined_t, unconfined_service_t;
+  class dir { add_name create getattr search write };
+  class file { create getattr write };
+  class fifo_file rw_fifo_file_perms;
+  class unix_stream_socket create_stream_socket_perms;
+  class tcp_socket { name_bind name_connect };
+  class udp_socket { name_bind name_connect };
+}
+
+
+## debug script:
+# echo "XX0"; audit2allow -Ri /var/log/audit/audit.log   > /root/x; vi /root/x
+# echo "XX1"; make -f /usr/share/selinux/devel/Makefile
+# echo "XX2"; semanage port -d -p udp 7777-7778 ; semanage port -d -p udp 7787-7788 ; semanage port -d -p udp 10777 ; semanage port -d -p tcp 8075 ; semanage port -d -p udp 6777-6778 ; semanage port -d -p udp 6787-6788 ; semanage port -d -p udp 10677 ; semanage port -d -p tcp 8065 ; semodule -r ut2k4server
+# echo "XX3"; semodule -i /root/selinux/lgsm-release/ut2k4server.pp ; semanage port -a -t ut2k4server_port_t -p udp 7777-7778 ; semanage port -a -t ut2k4server_port_t -p udp 7787-7788 ; semanage port -a -t ut2k4server_port_t -p udp 10777 ; semanage port -a -t ut2k4server_port_t -p tcp 8075 ; semanage port -a -t ut2k4server_port_t -p udp 6777-6778 ; semanage port -a -t ut2k4server_port_t -p udp 6787-6788 ; semanage port -a -t ut2k4server_port_t -p udp 10677 ; semanage port -a -t ut2k4server_port_t -p tcp 8065 ; restorecon -vR /opt/ut2k4server*/ /home/ut2k4server*/
+# echo "XX4"; service ut2k4server stop; rm -f /var/log/audit/audit.log ; service auditd restart; service ut2k4server start
+##
+
+
+type ut2k4server_t;
+type ut2k4server_home_dir_t;
+type ut2k4server_exec_t;
+type ut2k4server_home_t;
+type ut2k4server_tmp_dir_t;
+type ut2k4server_tmp_t;
+type ut2k4server_log_t;
+type ut2k4server_textfiles_t;
+type ut2k4server_anims_t;
+type ut2k4server_help_t;
+type ut2k4server_karma_t;
+type ut2k4server_maps_t;
+type ut2k4server_misc_t;
+type ut2k4server_music_t;
+type ut2k4server_port_t;
+type ut2k4server_redirect_t;
+type ut2k4server_screenshots_t;
+type ut2k4server_serverfiles_t;
+type ut2k4server_sounds_t;
+type ut2k4server_speech_t;
+type ut2k4server_staticmeshes_t;
+type ut2k4server_system_t;
+type ut2k4server_system_antitccmd5_t;
+type ut2k4server_system_cdkey_t;
+type ut2k4server_system_editorres_t;
+type ut2k4server_system_enginedat_t;
+type ut2k4server_system_ini_t;
+type ut2k4server_system_log_t;
+type ut2k4server_system_mods_t;
+type ut2k4server_system_mods_mutbinds_t;
+type ut2k4server_system_mods_botconfig_t;
+type ut2k4server_system_mods_locale_t;
+type ut2k4server_system_uccbin_t;
+type ut2k4server_system_ut2k4bin_t;
+type ut2k4server_textures_t;
+type ut2k4server_web_t;
+type ut2k4server_winbs_t;
+
+
+
+
+define(`ut2k4server_all_types',`{ ut2k4server_anims_t ut2k4server_exec_t ut2k4server_help_t ut2k4server_home_dir_t ut2k4server_home_t ut2k4server_karma_t ut2k4server_log_t ut2k4server_maps_t ut2k4server_misc_t ut2k4server_music_t ut2k4server_redirect_t ut2k4server_screenshots_t ut2k4server_sounds_t ut2k4server_speech_t ut2k4server_staticmeshes_t ut2k4server_system_antitccmd5_t ut2k4server_system_cdkey_t ut2k4server_system_editorres_t ut2k4server_system_enginedat_t ut2k4server_system_ini_t ut2k4server_system_log_t ut2k4server_system_mods_botconfig_t ut2k4server_system_mods_locale_t ut2k4server_system_mods_mutbinds_t ut2k4server_system_mods_t ut2k4server_system_t ut2k4server_system_uccbin_t ut2k4server_system_ut2k4bin_t ut2k4server_textfiles_t ut2k4server_textures_t ut2k4server_tmp_dir_t ut2k4server_tmp_t ut2k4server_web_t ut2k4server_winbs_t }')
+
+define(`ut2k4server_relabeler_types',`{ setfiles_t system_cronjob_t system_cronjob_tmp_t unconfined_t unconfined_service_t }')
+
+
+### init + proc trans
+init_daemon_domain(ut2k4server_t, ut2k4server_exec_t)
+fs_associate(ut2k4server_all_types)
+
+domtrans_pattern(unconfined_t, ut2k4server_exec_t, ut2k4server_t)
+
+####permissive ut2k4server_t;
+
+
+
+corenet_port(ut2k4server_port_t)
+
+
+
+## ut2004-bin/ucc-bin network stuff:
+allow ut2k4server_t self:tcp_socket { bind connect create getattr listen read setopt write };
+allow ut2k4server_t self:udp_socket { bind connect create getattr getopt read setopt write };
+allow ut2k4server_t ut2k4server_port_t:tcp_socket name_bind;
+allow ut2k4server_t ut2k4server_port_t:udp_socket name_bind;
+
+corenet_tcp_bind_generic_node(ut2k4server_t)
+corenet_tcp_connect_unreserved_ports(ut2k4server_t)
+corenet_udp_bind_generic_node(ut2k4server_t)
+corenet_udp_bind_generic_port(ut2k4server_t)
+sysnet_read_config(ut2k4server_t)
+
+
+term_use_generic_ptys(ut2k4server_t)
+
+
+## ut2k4server_t gets access to some of the lgsm dirs (lgsm has the "root dir" of the ut2k4server-instance, so we need some reading rights)
+optional_policy(`
+  lgsm_allow_fileaccess(ut2k4server_t)
+')
+
+
+## ut2k4server_t gets access to its own types/files.
+list_dirs_pattern(ut2k4server_t, ut2k4server_anims_t, ut2k4server_anims_t)
+read_files_pattern(ut2k4server_t, ut2k4server_anims_t, ut2k4server_anims_t)
+
+list_dirs_pattern(ut2k4server_t, ut2k4server_karma_t, ut2k4server_karma_t)
+read_files_pattern(ut2k4server_t, ut2k4server_karma_t, ut2k4server_karma_t)
+
+list_dirs_pattern(ut2k4server_t, ut2k4server_log_t, ut2k4server_log_t)
+read_files_pattern(ut2k4server_t, ut2k4server_log_t, ut2k4server_log_t)
+manage_files_pattern(ut2k4server_t, ut2k4server_log_t, ut2k4server_log_t)
+
+list_dirs_pattern(ut2k4server_t, ut2k4server_maps_t, ut2k4server_maps_t)
+read_files_pattern(ut2k4server_t, ut2k4server_maps_t, ut2k4server_maps_t)
+
+list_dirs_pattern(ut2k4server_t, ut2k4server_music_t, ut2k4server_music_t)
+read_files_pattern(ut2k4server_t, ut2k4server_music_t, ut2k4server_music_t)
+
+list_dirs_pattern(ut2k4server_t, ut2k4server_sounds_t, ut2k4server_sounds_t)
+read_files_pattern(ut2k4server_t, ut2k4server_sounds_t, ut2k4server_sounds_t)
+
+list_dirs_pattern(ut2k4server_t, ut2k4server_staticmeshes_t, ut2k4server_staticmeshes_t)
+read_files_pattern(ut2k4server_t, ut2k4server_staticmeshes_t, ut2k4server_staticmeshes_t)
+
+list_dirs_pattern(ut2k4server_t,  ut2k4server_system_antitccmd5_t, ut2k4server_system_antitccmd5_t)
+read_files_pattern(ut2k4server_t, ut2k4server_system_antitccmd5_t, ut2k4server_system_antitccmd5_t)
+rw_files_pattern(ut2k4server_t,   ut2k4server_system_antitccmd5_t, ut2k4server_system_antitccmd5_t)
+
+list_dirs_pattern(ut2k4server_t,  ut2k4server_system_cdkey_t, ut2k4server_system_cdkey_t)
+read_files_pattern(ut2k4server_t, ut2k4server_system_cdkey_t, ut2k4server_system_cdkey_t)
+rw_files_pattern(ut2k4server_t,   ut2k4server_system_cdkey_t, ut2k4server_system_cdkey_t)
+
+list_dirs_pattern(ut2k4server_t,  ut2k4server_system_t, ut2k4server_system_t)
+read_files_pattern(ut2k4server_t, ut2k4server_system_t, ut2k4server_system_t)
+## XXX so ucc-bin can recreate .ucl files for new maps, etc.
+#filetrans_pattern(ut2k4server_t, ut2k4server_system_t, ut2k4server_system_ucl_t, dir, ".ucl")
+type_transition ut2k4server_t ut2k4server_system_t:file ut2k4server_system_mods_mutbinds_t ".ucl";
+manage_dirs_pattern(ut2k4server_t, ut2k4server_system_t, ut2k4server_system_t)
+create_files_pattern(ut2k4server_t, ut2k4server_system_t, ut2k4server_system_t)
+write_files_pattern(ut2k4server_t, ut2k4server_system_t, ut2k4server_system_t)
+#manage_files_pattern(ut2k4server_t, ut2k4server_system_t, ut2k4server_system_t)
+
+list_dirs_pattern(ut2k4server_t,  ut2k4server_system_ini_t, ut2k4server_system_ini_t)
+read_files_pattern(ut2k4server_t, ut2k4server_system_ini_t, ut2k4server_system_ini_t)
+rw_files_pattern(ut2k4server_t,   ut2k4server_system_ini_t, ut2k4server_system_ini_t)
+
+list_dirs_pattern(ut2k4server_t,  ut2k4server_system_mods_botconfig_t, ut2k4server_system_mods_botconfig_t)
+read_files_pattern(ut2k4server_t, ut2k4server_system_mods_botconfig_t, ut2k4server_system_mods_botconfig_t)
+rw_files_pattern(ut2k4server_t,   ut2k4server_system_mods_botconfig_t, ut2k4server_system_mods_botconfig_t)
+
+list_dirs_pattern(ut2k4server_t,  ut2k4server_system_mods_mutbinds_t, ut2k4server_system_mods_mutbinds_t)
+read_files_pattern(ut2k4server_t, ut2k4server_system_mods_mutbinds_t, ut2k4server_system_mods_mutbinds_t)
+rw_files_pattern(ut2k4server_t,   ut2k4server_system_mods_mutbinds_t, ut2k4server_system_mods_mutbinds_t)
+
+list_dirs_pattern(ut2k4server_t,  ut2k4server_system_mods_locale_t, ut2k4server_system_mods_locale_t)
+read_files_pattern(ut2k4server_t, ut2k4server_system_mods_locale_t, ut2k4server_system_mods_locale_t)
+
+list_dirs_pattern(ut2k4server_t,  ut2k4server_system_mods_t, ut2k4server_system_mods_t)
+read_files_pattern(ut2k4server_t, ut2k4server_system_mods_t, ut2k4server_system_mods_t)
+
+list_dirs_pattern(ut2k4server_t,  ut2k4server_textures_t, ut2k4server_textures_t)
+read_files_pattern(ut2k4server_t, ut2k4server_textures_t, ut2k4server_textures_t)
+
+
+
+
+
+## selinux-relabelers-support:
+list_dirs_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+manage_dirs_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+manage_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+manage_chr_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+manage_fifo_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+manage_lnk_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+manage_sock_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+getattr_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+getattr_chr_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+getattr_fifo_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+getattr_lnk_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+getattr_sock_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+
+# relabelfrom:
+relabelfrom_dirs_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+relabelfrom_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+relabelfrom_fifo_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+relabelfrom_lnk_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+relabelfrom_sock_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+
+# relabelto:
+relabelto_dirs_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+relabelto_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+relabelto_fifo_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+relabelto_lnk_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+relabelto_sock_files_pattern(ut2k4server_relabeler_types, ut2k4server_all_types, ut2k4server_all_types)
+
+

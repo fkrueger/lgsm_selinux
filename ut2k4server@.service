@@ -1,0 +1,18 @@
+[Unit]
+Description=LinuxGSM UT2004 Server %I
+After=network-online.target opt.mount
+Wants=network-online.target opt.mount
+
+[Service]
+Type=forking
+User=%i
+WorkingDirectory=/opt/%i
+#Assume that the service is running after main process exits with code 0
+RemainAfterExit=yes
+ExecStart=/opt/%i/ut2k4server start
+ExecStop=/opt/%i/ut2k4server stop
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
+

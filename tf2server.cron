@@ -1,9 +1,7 @@
-MAILTO=mails-sys-cron-vm202@holics.at
-MAILFROM=mails-sys-cron-vm202@holics.at
+@reboot 'sudo -u tf2server -- /opt/tf2server/tf2server monitor' > /dev/null 2>&1
 
-@reboot '/home/tf2server/tf2server-2 monitor' > /dev/null 2>&1
+0 4 * * 0   tf2server   /usr/local/bin/lgsm_getplayersfromlog.sh >/dev/null 2>&1
 
-0 4 * * 0   tf2server   /usr/local/bin/tf2server_getplayersfromlog.sh
-
-55 3 * * *  root  systemctl restart tf2server >/dev/null 2>&1
+#* * * * *  root       /usr/local/bin/lgsm_checkupdate.sh doit >/dev/null 2>&1
+55 3 * * *  root       /usr/local/bin/lgsm_checkupdate.sh doit >/dev/null 2>&1
 

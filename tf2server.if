@@ -1,41 +1,86 @@
-## <summary>policy for tf2server</summary>
+## <summary>LGSM sub-policy for tf2server</summary>
 
 ########################################
 ## <summary>
-##	Execute tf2server_exec_t in the tf2server domain.
+##      Allow anyone (ok, just LGSM) to run the tf2server_exec_t binaries
 ## </summary>
 ## <param name="domain">
 ## <summary>
-##	Domain allowed to transition.
+##      Domain allowed to transition.
 ## </summary>
 ## </param>
 #
-interface(`tf2server_domtrans',`
-	gen_require(`
-		type tf2server_t, tf2server_exec_t;
-	')
+interface(`tf2server_can_exec',`
+        gen_require(`
+                type tf2server_t, tf2server_exec_t;
+        ')
 
-	corecmd_search_bin($1)
-	domtrans_pattern($1, tf2server_exec_t, tf2server_t)
+        corecmd_search_bin($1)
+        domtrans_pattern($1, tf2server_exec_t, tf2server_t)
 ')
 
-######################################
+########################################
 ## <summary>
-##	Execute tf2server in the caller domain.
+## Activate this if you want lgsm to support the tf2server sub-policy
 ## </summary>
 ## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
+##<summary>
+## Domain allowed access.
+##</summary>
 ## </param>
-#
-interface(`tf2server_exec',`
-	gen_require(`
-		type tf2server_exec_t;
-	')
+#### XXX load ONLY if tf2 policy is installed as well.. and add type bla; definition above:
+interface(`tf2server_lgsmconnect',`
+        gen_require(`
+                type tf2server_t, tf2server_exec_t, tf2server_devpts_t, tf2server_home_t, tf2server_home_dir_t, tf2server_bin_t, tf2server_bin_execmod_t, tf2server_log_t, tf2server_other_t, tf2server_other_bin_t, tf2server_other_dir_t, tf2server_other_rw_t, tf2server_steamapps_t, tf2server_steamapps_bin_t, tf2server_steamapps_workshop_t, tf2server_steamcmd_t, tf2server_steamcmd_sdk_t, tf2server_steamcmd_local_t, tf2server_steamcmd_local_log_t, tf2server_tf_bin_t, tf2server_tf_bin_execmod_t, tf2server_tf_addons_t, tf2server_tf_addons_dir_t, tf2server_tf_addons_execmod_t, tf2server_tf_addons_log_t, tf2server_tf_addons_rw_t, tf2server_tf_cfg_t, tf2server_tf_cfg_dir_t, tf2server_tf_cfg_sourcemod_t, tf2server_tf_custom_t, tf2server_tf_download_t, tf2server_tf_downloadlists_t, tf2server_tf_maps_t, tf2server_tmp_dir_t, tf2server_tmp_t;
+        ')
 
-	corecmd_search_bin($1)
-	can_exec($1, tf2server_exec_t)
+        define(`tf2server_all_types',`{ tf2server_t tf2server_exec_t tf2server_devpts_t tf2server_home_t tf2server_home_dir_t tf2server_bin_t tf2server_bin_execmod_t tf2server_log_t tf2server_other_t tf2server_other_bin_t tf2server_other_dir_t tf2server_other_rw_t tf2server_steamapps_t tf2server_steamapps_bin_t tf2server_steamapps_workshop_t tf2server_steamcmd_t tf2server_steamcmd_sdk_t tf2server_steamcmd_local_t tf2server_steamcmd_local_log_t tf2server_tf_bin_t tf2server_tf_bin_execmod_t tf2server_tf_addons_t tf2server_tf_addons_dir_t tf2server_tf_addons_execmod_t tf2server_tf_addons_log_t tf2server_tf_addons_rw_t tf2server_tf_cfg_t tf2server_tf_cfg_dir_t tf2server_tf_cfg_sourcemod_t tf2server_tf_custom_t tf2server_tf_download_t tf2server_tf_downloadlists_t tf2server_tf_maps_t tf2server_tmp_dir_t tf2server_tmp_t }')
+
+        list_dirs_pattern($1, tf2server_t, tf2server_t)
+        read_files_pattern($1, tf2server_t, tf2server_t)
+
+        list_dirs_pattern($1, tf2server_log_t, tf2server_log_t)
+        read_files_pattern($1, tf2server_log_t, tf2server_log_t)
+        manage_files_pattern($1, tf2server_log_t, tf2server_log_t)
+
+        getattr_lnk_files_pattern($1, { tf2server_bin_t tf2server_steamcmd_t tf2server_tf_cfg_t}, { tf2server_bin_t tf2server_steamcmd_t tf2server_tf_cfg_t})
+        read_lnk_files_pattern($1, { tf2server_bin_t tf2server_steamcmd_t tf2server_tf_cfg_t}, { tf2server_bin_t tf2server_steamcmd_t tf2server_tf_cfg_t})
+
+        dontaudit $1 tf2server_t:process { noatsecure rlimitinh siginh };
 ')
+
+########################################
+## <summary>
+## Internal BS to let lgsm find out about this module being loaded.
+## </summary>
+## <param name="domain">
+##<summary>
+## Domain allowed access.
+##</summary>
+## </param>
+interface(`tf2server_set_loadedname',`
+        gen_require(`
+                type tf2server_t;
+        ')
+        define(`tf2server_loadedname',`tf2server_t')
+')
+
+########################################
+## <summary>
+## Internal BS to let lgsm clear tf2server logfiles.
+## </summary>
+## <param name="domain">
+##<summary>
+## Domain allowed access.
+##</summary>
+## </param>
+interface(`tf2server_allow_logfilehandling',`
+        gen_require(`
+                type tf2server_log_t;
+                type tf2server_tf_addons_log_t;
+        ')
+	manage_dirs_pattern($1, tf2server_log_t, tf2server_tf_addons_log_t)
+')
+
 
 

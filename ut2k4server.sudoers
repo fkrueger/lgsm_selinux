@@ -1,0 +1,2 @@
+ut2k4server               ALL = (ut2k4server) NOPASSWD: /opt/ut2k4server/ut2k4server *, NOPASSWD: /opt/ut2k4server-*/ut2k4server-* *
+

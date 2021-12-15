@@ -9,7 +9,7 @@
 
 Name:   tf2server_selinux
 Version:	1.0
-Release:	1%{?dist}
+Release:	5%{?dist}
 Summary:	SELinux policy module for tf2server (lgsm based)
 BuildRequires: policycoreutils, selinux-policy-devel
 
@@ -99,6 +99,18 @@ exit 0
 
 
 %changelog
+* Tue Dec 7 2021 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-5
+- added support for lgsm_func_t execution via cronjob
+
+* Sat Sep 25 2021 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-4
+- added support for running the tf2server update via cronjob
+
+* Sat Sep 25 2021 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-3
+- added better support for talking to tf2server_port_t to be accessed by the lgsm updater script
+
+* Mon Aug 30 2021 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-2
+- Added dontaudit for our seboolean, allowed logrotate_t and system_cronjob_t to access our files
+
 * Mon Jul 12 2021 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-1
 - Initial version
 

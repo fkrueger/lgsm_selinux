@@ -1,0 +1,9 @@
+MAILTO=mails-sys-cron-vm202@holics.at
+MAILFROM=mails-sys-cron-vm202@holics.at
+
+@reboot '/home/ut2k4server/ut2k4server-2 monitor' > /dev/null 2>&1
+
+0 4 * * 0   ut2k4server   /usr/local/bin/ut2k4server_getplayersfromlog.sh
+
+55 3 * * *  root  systemctl restart ut2k4server >/dev/null 2>&1
+
