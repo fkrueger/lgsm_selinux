@@ -32,13 +32,16 @@ require {
   type efivarfs_t;
   type firewalld_t, firewalld_unit_file_t;
   type getty_t, getty_unit_file_t;
+  type gssproxy_t;
   type init_t, init_var_run_t;
   type irqbalance_t;
   type kernel_t;
+  type kdump_t, kdumpctl_t;
   type policykit_t;
-  type postfix_master_t, postfix_pickup_t, postfix_qmgr_t;
+  type postfix_cleanup_t, postfix_master_t, postfix_pickup_t, postfix_qmgr_t, postfix_smtp_t;
   type proc_t;
   type rhsmcertd_t, rngd_t;
+  type rpcbind_t, rpcd_t;
   type sshd_t, sshd_net_t, sshd_unit_file_t;
   type system_dbusd_t, systemd_hostnamed_t, systemd_logind_t, systemd_logind_var_run_t, systemd_passwd_var_run_t, systemd_passwd_agent_t, systemd_passwd_agent_exec_t, systemd_systemctl_exec_t;
   type sssd_t, sssd_unit_file_t;
@@ -71,7 +74,8 @@ type lgsm_tmp_t;
 define(`lgsm_all_types',`{ lgsm_t lgsm_backup_t lgsm_cfg_t lgsm_data_t lgsm_exec_t lgsm_func_t lgsm_home_dir_t lgsm_home_t lgsm_lock_dir_t lgsm_lock_t lgsm_log_t lgsm_misc_t lgsm_serverfiles_t lgsm_t lgsm_tmp_dir_t lgsm_tmp_t }')
 define(`lgsm_relabeler_types',`{ setfiles_t system_cronjob_t unconfined_t }')
 
-define(`lgsm_ss_dontaudit_types',`NetworkManager_t NetworkManager_unit_file_t auditd_t auditd_unit_file_t cgroup_t chronyd_t chronyd_unit_file_t crond_t efivarfs_t firewalld_t firewalld_unit_file_t getty_t getty_unit_file_t init_t irqbalance_t kernel_t policykit_t postfix_master_t postfix_pickup_t postfix_qmgr_t proc_t rhsmcertd_t rpm_t rngd_t sshd_t sshd_net_t sshd_unit_file_t system_cronjob_t systemd_hostnamed_t systemd_logind_var_run_t systemd_passwd_var_run_t systemd_passwd_agent_t systemd_passwd_agent_exec_t systemd_systemctl_exec_t sssd_t sssd_unit_file_t sysfs_t syslogd_t syslogd_unit_file_t system_dbusd_t systemd_logind_t tuned_t udev_t unconfined_service_t')
+define(`lgsm_ss_dontaudit_types',`NetworkManager_t NetworkManager_unit_file_t auditd_t auditd_unit_file_t cgroup_t chronyd_t chronyd_unit_file_t crond_t efivarfs_t firewalld_t firewalld_unit_file_t gssproxy_t getty_t getty_unit_file_t init_t irqbalance_t kdump_t kdumpctl_t kernel_t policykit_t postfix_cleanup_t postfix_master_t postfix_pickup_t postfix_qmgr_t postfix_smtp_t proc_t rhsmcertd_t rpcbind_t rpcd_t rpm_t rngd_t sshd_t sshd_net_t sshd_unit_file_t system_cronjob_t systemd_hostnamed_t systemd_logind_var_run_t systemd_passwd_var_run_t systemd_passwd_agent_t systemd_passwd_agent_exec_t systemd_systemctl_exec_t sssd_t sssd_unit_file_t sysfs_t syslogd_t syslogd_unit_file_t system_dbusd_t systemd_logind_t tuned_t udev_t unconfined_service_t')
+
 
 
 #### XXX load ONLY if ut2k4server policy is installed as well.. and add type bla; definition above:
@@ -302,7 +306,10 @@ manage_files_pattern(lgsm_t, lgsm_tmp_t, lgsm_tmp_t)
 manage_sock_files_pattern(lgsm_t, lgsm_tmp_t, lgsm_tmp_t)
 getattr_sock_files_pattern(systemd_tmpfiles_t, tmp_t, lgsm_tmp_t)
 getattr_sock_files_pattern(systemd_tmpfiles_t, lgsm_tmp_t, lgsm_tmp_t)
-
+# XXX allow systemd_tmpfiles_t to handle/remove 10d (by default) old tmux dirs. servers should be restarted daily anyhow.
+search_dirs_pattern(systemd_tmpfiles_t, lgsm_tmp_t, lgsm_tmp_t)
+list_dirs_pattern(systemd_tmpfiles_t, lgsm_tmp_t, lgsm_tmp_t)
+manage_dirs_pattern(systemd_tmpfiles_t, lgsm_tmp_t, lgsm_tmp_t)
 
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:dir search_dir_perms;
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:dir list_dir_perms;
@@ -391,6 +398,7 @@ manage_dirs_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
 getattr_files_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
 read_files_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
 manage_files_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
+manage_sock_files_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
 
 ### systemd_coredump_t update support:
 list_dirs_pattern(systemd_coredump_t, lgsm_all_types, lgsm_all_types)

@@ -15,12 +15,13 @@ PLAYERLASTLOGSEEN="$SVCLOGDIR/${SVCNAME}_player.lastlogfileseen.log"
 
 
 usage() {
-  echo "usage: $0 [servicename] <doit>"
+  echo "usage: $0 [servicename] <doit|showit>"
   echo ""
   echo "    get player-logins from server logfile, and write it into $PLAYERLOGFILE ."
   echo "    you can add [servicename] to load a custom env file from /etc/sysconfig, eg. supply tf2server-2 to load /etc/sysconfig/tf2server-2 ."
   echo ""
   echo "    add 'doit' do actually do something."
+  echo "    add 'showit' to only show our current logfile $PLAYERLOGFILE ."
   echo ""
   exit -1
 }
@@ -43,7 +44,7 @@ if [ "x$DOIT" == "x0" ]; then
     source $ENVFILE
     [ "x$2" == "xdoit" ] && DOIT=1
   else
-    if [ "x$1" != "x" ]; then
+    if [ "x$1" != "x" ] && [ "x$1" != "xdoit" ] && [ "x$1" != "xshowit" ]; then
       echo "!!! Problem loading env file $ENVFILE . Exitting."
       exit 1
     fi
@@ -53,6 +54,12 @@ fi
 if [ "x$1" == "-h" ] || [ "x$1" == "--help" ]; then
   usage
 fi
+
+if [ "x$2" == "xshowit" ]; then
+  cat $PLAYERLOGFILE
+  exit 0
+fi
+
 
 
 logme ""
