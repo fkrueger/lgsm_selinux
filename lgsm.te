@@ -1,4 +1,4 @@
-policy_module(lgsm, 20211208.1.1)
+policy_module(lgsm, 20220415.1.4)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -144,7 +144,7 @@ allow lgsm_t self:netlink_generic_socket { bind create getattr setopt };
 allow lgsm_t self:netlink_tcpdiag_socket { read write };
 allow lgsm_t self:netlink_route_socket { bind create getattr nlmsg_read setopt };
 allow lgsm_t self:netlink_tcpdiag_socket { bind create getattr nlmsg_read setopt };
-allow lgsm_t self:process getattr;
+allow lgsm_t self:process { getattr setcap };
 allow lgsm_t self:tcp_socket { connect create getattr getopt setopt };
 allow lgsm_t self:udp_socket { connect create getattr setopt };
 
@@ -160,7 +160,7 @@ allow lgsm_t lgsm_t:udp_socket { read write };
 
 
 ## XXX in case we have more than one server instance running on the same machine, we (might) need this:
-allow lgsm_t unconfined_t:dir getattr;
+getattr_dirs_pattern(lgsm_t, unconfined_t, unconfined_t)
 
 optional_policy(`
   gen_require(`type tf2server_loadedname; ')
@@ -270,6 +270,7 @@ exec_files_pattern(lgsm_t, lgsm_func_t, lgsm_func_t)
 
 search_dirs_pattern(lgsm_t, lgsm_home_dir_t, lgsm_home_dir_t)
 list_dirs_pattern(lgsm_t, lgsm_home_dir_t, lgsm_home_dir_t)
+getattr_files_pattern(lgsm_t, lgsm_home_dir_t, lgsm_home_dir_t)
 
 search_dirs_pattern(lgsm_t, lgsm_home_t, lgsm_home_t)
 list_dirs_pattern(lgsm_t, lgsm_home_t, lgsm_home_t)
@@ -414,7 +415,7 @@ manage_dirs_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
 exec_files_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
 manage_files_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
 manage_lnk_files_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
-
+manage_sock_files_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
 
 
 ## selinux-relabelers-support:

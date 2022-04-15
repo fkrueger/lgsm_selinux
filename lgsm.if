@@ -21,6 +21,9 @@ interface(`lgsm_allow_fileaccess',`
   search_dirs_pattern($1, lgsm_serverfiles_t, lgsm_serverfiles_t)
   list_dirs_pattern($1, lgsm_home_dir_t, lgsm_home_dir_t)
   list_dirs_pattern($1, lgsm_serverfiles_t, lgsm_serverfiles_t)
+  # for dnf coming in as rpm_t:
+  manage_dirs_pattern($1, lgsm_home_dir_t, lgsm_home_dir_t)
+  manage_files_pattern($1, lgsm_home_dir_t, lgsm_home_dir_t)
 ')
 
 ########################################

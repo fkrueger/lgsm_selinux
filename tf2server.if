@@ -45,6 +45,13 @@ interface(`tf2server_lgsmconnect',`
 
         getattr_lnk_files_pattern($1, { tf2server_bin_t tf2server_steamcmd_t tf2server_tf_cfg_t}, { tf2server_bin_t tf2server_steamcmd_t tf2server_tf_cfg_t})
         read_lnk_files_pattern($1, { tf2server_bin_t tf2server_steamcmd_t tf2server_tf_cfg_t}, { tf2server_bin_t tf2server_steamcmd_t tf2server_tf_cfg_t})
+        manage_files_pattern($1, tf2server_steamcmd_t, tf2server_steamcmd_t)
+        manage_lnk_files_pattern($1, tf2server_steamcmd_t, tf2server_steamcmd_t)
+
+        manage_dirs_pattern($1, tf2server_steamcmd_sdk_t, tf2server_steamcmd_sdk_t)
+        manage_files_pattern($1, tf2server_steamcmd_sdk_t, tf2server_steamcmd_sdk_t)
+
+        manage_files_pattern($1, tf2server_tf_addons_log_t, tf2server_tf_addons_log_t)
 
         dontaudit $1 tf2server_t:process { noatsecure rlimitinh siginh };
 ')
