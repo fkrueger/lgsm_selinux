@@ -1,4 +1,4 @@
-policy_module(tf2server, 20220415.1.3)
+policy_module(tf2server, 20220415.1.4)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -191,6 +191,8 @@ read_files_pattern(tf2server_t, tf2server_bin_execmod_t, tf2server_bin_execmod_t
 exec_files_pattern(tf2server_t, tf2server_bin_execmod_t, tf2server_bin_execmod_t)
 
 filetrans_pattern(tf2server_t, tf2server_tf_addons_dir_t, tf2server_tf_addons_t, file)
+getattr_files_pattern(tf2server_t, tf2server_tf_addons_dir_t, tf2server_tf_addons_dir_t)
+read_files_pattern(tf2server_t, tf2server_tf_addons_dir_t, tf2server_tf_addons_dir_t)
 list_dirs_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
 manage_files_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
 
