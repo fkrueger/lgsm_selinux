@@ -3,6 +3,19 @@
 tf2server\_selinux - Security Enhanced Linux Policy for the tf2server
 processes
 
+# LINKS
+
+Finished RPMs for CentOS 8 (Stream) and maybe even Fedora can be found here: **https://dev.techno.holics.at/technoholics-repo/
+
+Simply do the usual dance with:
+
+  yum install https://dev.techno.holics.at/technoholics-repo/el8/technoholics-repo-release-20210620-1.el8.noarch.rpm
+
+And go on from there.
+
+Enjoy!
+
+
 # DESCRIPTION
 
 Security-Enhanced Linux secures the tf2server processes via flexible
