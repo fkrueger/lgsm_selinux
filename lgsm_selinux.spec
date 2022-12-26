@@ -23,7 +23,7 @@
 
 Name: lgsm
 Version: 1.0
-Release: 9%{?dist}
+Release: 10%{?dist}
 Summary: SELinux base policy module for LGSM-based servers
 BuildRequires: policycoreutils, selinux-policy-devel
 
@@ -44,16 +44,19 @@ Source21: tf2server.env
 Source22: tf2server.service
 Source23: tf2server.sudoers
 Source24: tf2server.xml
+Source25: tf2server@.service
 Source30: ut2k4server.te
 Source31: ut2k4server.fc
 Source32: ut2k4server.if
 Source40: ut2k4server.cron
 Source41: ut2k4server.env
 Source42: ut2k4server.service
+Source45: ut2k4server@.service
 Source43: ut2k4server.sudoers
 Source44: ut2k4server.xml
 Source50: lgsm_getplayersfromlog.sh
 Source51: lgsm_checkupdate.sh
+Source52: lgsm_restart-when-needed.sh
 
 
 Requires: policycoreutils, libselinux-utils
@@ -92,8 +95,26 @@ install -m 644 %{SOURCE32} %{buildroot}%{_datadir}/selinux/devel/include/contrib
 install -m 644 %{_builddir}/%{name}-%{version}-%{release}.%{_arch}/%{selinux_ut2k4server_ppname}.pp %{buildroot}%{_datadir}/selinux/packages
 
 ## lgsm-utils
+%{__mkdir_p} %{buildroot}%{_defaultdocdir}/%{name}-%{version} %{buildroot}/usr/bin %{buildroot}/etc/sysconfig %{buildroot}/etc/cron.d %{buildroot}/etc/sudoers.d %{buildroot}/usr/lib/systemd/system %{buildroot}/usr/lib/firewalld/services
+install -m 755 %{SOURCE50} %{buildroot}/usr/bin/
+install -m 755 %{SOURCE51} %{buildroot}/usr/bin/
+install -m 755 %{SOURCE52} %{buildroot}/usr/bin/
+
 ## lgsm-tf2server-utils
+install -m 644 %{SOURCE20} %{buildroot}/etc/cron.d/tf2server
+install -m 644 %{SOURCE23} %{buildroot}/etc/sudoers.d/tf2server
+install -m 644 %{SOURCE21} %{buildroot}/etc/sysconfig/tf2server.env
+#install -m 644 %{SOURCE22} %{buildroot}/usr/lib/systemd/system/tf2server.service
+install -m 644 %{SOURCE25} %{buildroot}/usr/lib/systemd/system/tf2server@.service
+install -m 644 %{SOURCE24} %{buildroot}/usr/lib/firewalld/services/tf2server.xml
+
 ## lgsm-ut2k4server-utils
+install -m 644 %{SOURCE40} %{buildroot}/etc/cron.d/ut2k4server
+install -m 644 %{SOURCE43} %{buildroot}/etc/sudoers.d/ut2k4server
+install -m 644 %{SOURCE41} %{buildroot}/etc/sysconfig/ut2k4server.env
+#install -m 644 %{SOURCE42} %{buildroot}/usr/lib/systemd/system/ut2k4server.service
+install -m 644 %{SOURCE45} %{buildroot}/usr/lib/systemd/system/ut2k4server@.service
+install -m 644 %{SOURCE44} %{buildroot}/usr/lib/firewalld/services/ut2k4server.xml
 
 
 %build
@@ -105,9 +126,10 @@ mkdir -p "$TMPB"
 cp %{SOURCE0} %{SOURCE1} %{SOURCE2} %{SOURCE10} %{SOURCE11} %{SOURCE12} %{SOURCE30} %{SOURCE31} %{SOURCE32} "$TMPB"
 cd "$TMPB"
 make -f /usr/share/selinux/devel/Makefile
-## lgsm-utils
-## lgsm-tf2server-utils
-## lgsm-ut2k4server-utils
+
+## lgsm-utils -> nothing to do here
+## lgsm-tf2server-utils -> nothing to do here
+## lgsm-ut2k4server-utils -> nothing to do here
 
 
 
@@ -175,6 +197,44 @@ URL:		https://github.com/fkrueger/lgsm_selinux
 
 %description -n lgsm-tf2server_selinux
 This package installs and sets up the SELinux policy security module for tf2server.
+
+
+%package -n lgsm-utils
+#Name: lgsm-utils
+Summary: Utility scripts for handling server tasks (tf2server, ut2k4 supported as of now)
+
+Group:	System Environment/Base		
+License:	GPLv2+	
+URL:		https://github.com/fkrueger/lgsm_selinux
+
+%description -n lgsm-utils
+This package contains a set of bash scripts for easier handling of your tf2server/ut2k4servers and information gathering.
+
+
+%package -n lgsm-tf2server-utils
+#Name: lgsm-tf2server-utils
+Summary: Configuration files for OS basics (firewalld, systemd-service, cron-tasks, sudoers, tf2server-specific env-file)
+Requires: lgsm_utils
+
+Group:	System Environment/Base		
+License:	GPLv2+	
+URL:		https://github.com/fkrueger/lgsm_selinux
+
+%description -n lgsm-tf2server-utils
+This package contains os-specific configuration files (firewalld, systemd-service, cron-tasks, sudoers, tf2server-specific env-file).
+
+
+%package -n lgsm-ut2k4server-utils
+#Name: lgsm-ut2k4server-utils
+Summary: Configuration files for OS basics (firewalld, systemd-service, cron-tasks, sudoers, ut2k4server-specific env-file)
+Requires: lgsm_utils
+
+Group:	System Environment/Base		
+License:	GPLv2+	
+URL:		https://github.com/fkrueger/lgsm_selinux
+
+%description -n lgsm-ut2k4server-utils
+This package contains os-specific configuration files (firewalld, systemd-service, cron-tasks, sudoers, ut2k4server-specific env-file).
 
 
 
@@ -304,8 +364,33 @@ exit 0
 %doc %{_defaultdocdir}/%{name}-%{version}/readme.md
 
 
+%files utils
+%attr(0755,root,root) /usr/bin/lgsm_checkupdate.sh
+%attr(0755,root,root) /usr/bin/lgsm_getplayersfromlog.sh
+%attr(0755,root,root) /usr/bin/lgsm_restart-when-needed.sh
+
+%files tf2server-utils
+%attr(0644,root,root) /etc/cron.d/tf2server
+%attr(0644,root,root) /etc/sudoers.d/tf2server
+%attr(0644,root,root) /etc/sysconfig/tf2server.env
+%attr(0644,root,root) /usr/lib/firewalld/services/tf2server.xml
+%attr(0644,root,root) /usr/lib/systemd/system/tf2server@.service
+
+%files ut2k4server-utils
+%attr(0644,root,root) /etc/cron.d/ut2k4server
+%attr(0644,root,root) /etc/sudoers.d/ut2k4server
+%attr(0644,root,root) /etc/sysconfig/ut2k4server.env
+%attr(0644,root,root) /usr/lib/firewalld/services/ut2k4server.xml
+%attr(0644,root,root) /usr/lib/systemd/system/ut2k4server@.service
+
+
 
 %changelog
+* Mon Dec 26 2022 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-10
+- fixed tf2server-specific problems during updating once again, including rpm_script_t, rpm-t and crond_t related troubles
+- finally finished the utils packages (lgsm-utils, lgsm-tf2server-utils, lgsm-ut2k4server-utils)
+- added lgsm_restart-when-needed.sh script to get around tf2 not restarting after an update, when it should have.
+
 * Fri Apr 15 2022 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-9
 - fixed tf2server-specific problems while updating with steamcmd (again), and rpm_t/crond_t related troubles preventing reboot (again)
 
