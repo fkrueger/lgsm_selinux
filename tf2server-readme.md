@@ -7,7 +7,7 @@ processes
 
 Finished RPMs for CentOS 8 (Stream) and maybe even Fedora can be found here: **https://dev.techno.holics.at/technoholics-repo/
 
-Simply do the usual dance with:
+Simply do the usual dance with
 
   yum install https://dev.techno.holics.at/technoholics-repo/el8/technoholics-repo-release-20210620-1.el8.noarch.rpm
 
