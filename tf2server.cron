@@ -1,7 +1,11 @@
+MAILTO=mail-address@yourserv.er
+MAILFROM=mail-address@yourserv.er
+
 @reboot 'sudo -u tf2server -- /opt/tf2server/tf2server monitor' > /dev/null 2>&1
 
 0 4 * * 0   tf2server   /usr/local/bin/lgsm_getplayersfromlog.sh >/dev/null 2>&1
+*/10 3-5 * * *   tf2server   /usr/local/bin/lgsm_restart-when-needed.sh tf2server doit >/dev/null 2>&1
 
-#* * * * *  root       /usr/local/bin/lgsm_checkupdate.sh doit >/dev/null 2>&1
-55 3 * * *  root       /usr/local/bin/lgsm_checkupdate.sh doit >/dev/null 2>&1
+#* * * * *  root       /usr/local/bin/lgsm_checkupdate.sh tf2server doit >/dev/null 2>&1
+55 3 * * *  root       /usr/local/bin/lgsm_checkupdate.sh tf2server doit >/dev/null 2>&1
 
