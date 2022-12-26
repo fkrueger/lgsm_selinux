@@ -1,4 +1,4 @@
-policy_module(tf2server, 20220415.1.4)
+policy_module(tf2server, 20220415.1.5)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -67,7 +67,7 @@ type tf2server_tmp_t;
 
 define(`tf2server_all_types',`{ tf2server_t tf2server_exec_t tf2server_devpts_t tf2server_home_t tf2server_home_dir_t tf2server_bin_t tf2server_bin_execmod_t tf2server_log_t tf2server_other_t tf2server_other_bin_t tf2server_other_dir_t tf2server_other_rw_t tf2server_steamapps_t tf2server_steamapps_bin_t tf2server_steamapps_workshop_t tf2server_steamcmd_t tf2server_steamcmd_sdk_t tf2server_steamcmd_local_t tf2server_steamcmd_local_log_t tf2server_tf_bin_t tf2server_tf_bin_execmod_t tf2server_tf_addons_t tf2server_tf_addons_dir_t tf2server_tf_addons_execmod_t tf2server_tf_addons_log_t tf2server_tf_addons_rw_t tf2server_tf_cfg_t tf2server_tf_cfg_dir_t tf2server_tf_cfg_sourcemod_t tf2server_tf_custom_t tf2server_tf_download_t tf2server_tf_downloadlists_t tf2server_tf_maps_t tf2server_tmp_dir_t tf2server_tmp_t }')
 
-define(`tf2server_relabeler_types',`{ rpm_t setfiles_t system_cronjob_t system_cronjob_tmp_t unconfined_t unconfined_service_t }')
+define(`tf2server_relabeler_types',`{ rpm_t rpm_script_t setfiles_t system_cronjob_t system_cronjob_tmp_t unconfined_t unconfined_service_t }')
 
 
 
@@ -431,6 +431,7 @@ manage_dirs_pattern(logrotate_t, tf2server_all_types, tf2server_all_types)
 # system_cronjob_t: this is only to allow our own scripts to play with the tf2server-folders and processes. may need to become more open XXX TODO
 search_dirs_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
 list_dirs_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
+read_lnk_files_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
 getattr_files_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
 
 # crond_t:
