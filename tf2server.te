@@ -1,4 +1,4 @@
-policy_module(tf2server, 20220415.1.5)
+policy_module(tf2server, 20230106.1.1)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -452,6 +452,8 @@ read_files_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_types)
 mmap_read_files_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_types)
 
 
+# rpm_script_t
+read_files_pattern(rpm_script_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
 
 
 

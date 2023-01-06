@@ -14,13 +14,16 @@ interface(`lgsm_allow_fileaccess',`
         gen_require(`
                 type lgsm_home_dir_t;
                 type lgsm_log_t;
+                type lgsm_misc_t;
                 type lgsm_serverfiles_t;
         ')
   search_dirs_pattern($1, lgsm_home_dir_t, lgsm_home_dir_t)
   search_dirs_pattern($1, lgsm_log_t, lgsm_log_t)
   search_dirs_pattern($1, lgsm_serverfiles_t, lgsm_serverfiles_t)
+  search_dirs_pattern($1, lgsm_misc_t, lgsm_misc_t)
   list_dirs_pattern($1, lgsm_home_dir_t, lgsm_home_dir_t)
   list_dirs_pattern($1, lgsm_serverfiles_t, lgsm_serverfiles_t)
+  list_dirs_pattern($1, lgsm_misc_t, lgsm_misc_t)
   # for dnf coming in as rpm_t:
   manage_dirs_pattern($1, lgsm_home_dir_t, lgsm_home_dir_t)
   manage_files_pattern($1, lgsm_home_dir_t, lgsm_home_dir_t)

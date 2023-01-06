@@ -385,6 +385,7 @@ exit 0
 * Fri Jan 6 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-11
 - lgsm_getplayersfromlog.sh now does the sensible thing: show the log filtered through sort -u
 - finally made lgsm_getupdate and lgsm_restart-when-needed work better with the new dynamic systemd service files (tf2server@.service and ut2k4server@.service) . Update your /etc/sysconfig/tf2server.env file(s)!
+- fixed some SELinux weirdness regarding lgsm's steamcmd
 - Happy new year!
 
 * Mon Dec 26 2022 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-10

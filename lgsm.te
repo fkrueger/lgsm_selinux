@@ -1,4 +1,4 @@
-policy_module(lgsm, 20220415.1.5)
+policy_module(lgsm, 20230106.1.1)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -314,12 +314,15 @@ search_dirs_pattern(systemd_tmpfiles_t, lgsm_tmp_t, lgsm_tmp_t)
 list_dirs_pattern(systemd_tmpfiles_t, lgsm_tmp_t, lgsm_tmp_t)
 manage_dirs_pattern(systemd_tmpfiles_t, lgsm_tmp_t, lgsm_tmp_t)
 
+dontaudit systemd_tmpfiles_t lgsm_tmp_t:sock_file manage_sock_file_perms;
+
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:dir search_dir_perms;
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:dir list_dir_perms;
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:file read_file_perms;
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:lnk_file read_lnk_file_perms;
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:service manage_service_perms;
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:process getattr;
+
 
 # XXX more ss BS
 dontaudit lgsm_t kernel_t:system module_request;
