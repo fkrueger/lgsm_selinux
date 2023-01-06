@@ -6,6 +6,7 @@ SELXGETENF="/usr/sbin/getenforce"
 SELXRESTCON="/usr/sbin/restorecon"
 
 ## defaults:
+SVCGAME="tf2server"
 SVCNAME="tf2server"
 SVCUSER="tf2server"
 SVCDIR="/opt/$SVCNAME"
@@ -14,6 +15,9 @@ LGSMSERVERBIN="$SVCDIR/$SVCNAME"
 UPDATELOGFILE="$SVCDIR/log/server/${SVCNAME}_checkupdate.log"
 
 
+
+# automatically created
+SYSDSVCNAME="$SVCGAME@$SVCNAME"
 
 
 usage() {
@@ -40,7 +44,7 @@ logme() {
 DOIT=0
 [ "x$1" == "xdoit" ] && DOIT=1
 if [ "x$DOIT" == "x0" ]; then
-  ENVFILE="/etc/sysconfig/$1"
+  ENVFILE="/etc/sysconfig/$1.env"
   if [ -e "$ENVFILE" ]; then
     source $ENVFILE
     [ "x$2" == "xdoit" ] && DOIT=1
@@ -54,6 +58,11 @@ fi
 
 if [ "x$1" == "-h" ] || [ "x$1" == "--help" ]; then
   usage
+fi
+
+
+if [ "x$UID" == "x0" ]; then				# make sure our files are as server-username, so lgsm update doesnt fail to restart the server.
+  chown $SVCUSER:$SVCUSER $UPDPATELOGFILE >/dev/null 2>&1
 fi
 
 
@@ -78,8 +87,8 @@ DORESTORECON=0
 [ "x$SELINUXMODE" == "xPermissive" ] && DORESTORECON=1
 
 # technically an else would be sufficient here:
-logme "# starting.. by doing: $SYSDCTL stop $SVCNAME"
-[ "x$DOIT" == "x1" ] && $SYSDCTL stop $SVCNAME >>$UPDATELOGFILE 2>&1
+logme "# starting.. by doing: $SYSDCTL stop $SYSDSVCNAME"
+[ "x$DOIT" == "x1" ] && $SYSDCTL stop $SYSDSVCNAME >>$UPDATELOGFILE 2>&1
 [ "x$DORESTORECON" == "x1" ] && logme "# cont'ing.. selinux seems to be active, thus doing: $SELXRESTCON -vR $SVCDIR" && $SELXRESTCON -vR $SVCDIR >>$UPDATELOGFILE 2>&1
 logme "# cont'ing.. by doing: sudo -u $SVCUSER -- $LGSMSERVERBIN update-lgsm"
 [ "x$DOIT" == "x1" ] && sudo -u $SVCUSER -- $LGSMSERVERBIN update-lgsm >>$UPDATELOGFILE 2>&1
@@ -90,11 +99,15 @@ logme "# cont'ing.. by doing: sudo -u $SVCUSER -- $LGSMSERVERBIN mods-update"
 [ "x$DOIT" == "x1" ] &&  sudo -u $SVCUSER -- $LGSMSERVERBIN mods-update >>$UPDATELOGFILE 2>&1
 logme "# cont'ing.. by doing: sudo -u $SVCUSER -- $LGSMSERVERBIN stop"
 [ "x$DOIT" == "x1" ] &&  sudo -u $SVCUSER -- $LGSMSERVERBIN stop >>$UPDATELOGFILE 2>&1
-logme "# finishing up.. by doing: $SYSDCTL start $SVCNAME"
-[ "x$DOIT" == "x1" ] &&  $SYSDCTL start $SVCNAME >>$UPDATELOGFILE 2>&1
+logme "# finishing up.. by doing: $SYSDCTL start $SYSDSVCNAME"
+[ "x$DOIT" == "x1" ] &&  $SYSDCTL start $SYSDSVCNAME >>$UPDATELOGFILE 2>&1
 logme "# fin."
 
 cd "$OLDPWD"
+
+if [ "x$UID" == "x0" ]; then				# make sure our files are as server-username, so lgsm update doesnt fail to restart the server.
+  chown $SVCUSER:$SVCUSER $UPDPATELOGFILE >/dev/null 2>&1
+fi
 
 exit 0
 

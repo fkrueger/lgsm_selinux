@@ -2,6 +2,7 @@
 
 
 ## defaults:
+SVCGAME="tf2server"
 SVCNAME="tf2server"
 SVCUSER="tf2server"
 SVCDIR="/opt/$SVCNAME"
@@ -13,6 +14,11 @@ CONSLOGFILE="$CONSLOGDIR/tf2server-console.log"
 
 RESTARTSEARCHIE="non working searchie input for grep"
 RESTARTLOGFILE="$CONSLOGFILE"
+
+
+
+# automatically created
+SYSDSVCNAME="$SVCGAME@$SVCNAME"
 
 
 usage() {
@@ -129,14 +135,14 @@ if [ "x$?" == "x0" ]; then 			# if found:
     if [ "x$DOIT" == "x0" ]; then
       logme ".. Would now restart instance $SVCNAME via systemctl, but DOIT=$DOIT .. Skipping."
     else
-      logme ".. Stopping instance $SVCNAME.service via systemctl:"
-      /usr/bin/systemctl stop $SVCNAME.service
-      logme ".. Starting instance $SVCNAME via systemctl:"
-      /usr/bin/systemctl start $SVCNAME.service
+      logme ".. Stopping instance $SYSDSVCNAME via systemctl:"
+      /usr/bin/systemctl stop $SYSDSVCNAME.service
+      logme ".. Starting instance $SYSDSVCNAME via systemctl:"
+      /usr/bin/systemctl start $SYSDSVCNAME.service
       RC=99
-      /usr/bin/systemctl status $SVCNAME.service
+      /usr/bin/systemctl status $SYSDSVCNAME.service
       if [ "x$?" == "x0" ]; then
-        logme ".. Service $SVCNAME.service seems to have been successfully restarted (according to systemctl)"
+        logme ".. Service $SYSDSVCNAME seems to have been successfully restarted (according to systemctl)"
         RC=0
       fi
     fi

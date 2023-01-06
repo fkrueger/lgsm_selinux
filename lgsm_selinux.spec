@@ -23,7 +23,7 @@
 
 Name: lgsm
 Version: 1.0
-Release: 10%{?dist}
+Release: 11%{?dist}
 Summary: SELinux base policy module for LGSM-based servers
 BuildRequires: policycoreutils, selinux-policy-devel
 
@@ -41,7 +41,6 @@ Source14: tf2server-readme.md
 Source15: tf2server_selinux_rpm.sh
 Source20: tf2server.cron
 Source21: tf2server.env
-Source22: tf2server.service
 Source23: tf2server.sudoers
 Source24: tf2server.xml
 Source25: tf2server@.service
@@ -50,7 +49,6 @@ Source31: ut2k4server.fc
 Source32: ut2k4server.if
 Source40: ut2k4server.cron
 Source41: ut2k4server.env
-Source42: ut2k4server.service
 Source45: ut2k4server@.service
 Source43: ut2k4server.sudoers
 Source44: ut2k4server.xml
@@ -104,7 +102,6 @@ install -m 755 %{SOURCE52} %{buildroot}/usr/bin/
 install -m 644 %{SOURCE20} %{buildroot}/etc/cron.d/tf2server
 install -m 644 %{SOURCE23} %{buildroot}/etc/sudoers.d/tf2server
 install -m 644 %{SOURCE21} %{buildroot}/etc/sysconfig/tf2server.env
-#install -m 644 %{SOURCE22} %{buildroot}/usr/lib/systemd/system/tf2server.service
 install -m 644 %{SOURCE25} %{buildroot}/usr/lib/systemd/system/tf2server@.service
 install -m 644 %{SOURCE24} %{buildroot}/usr/lib/firewalld/services/tf2server.xml
 
@@ -112,7 +109,6 @@ install -m 644 %{SOURCE24} %{buildroot}/usr/lib/firewalld/services/tf2server.xml
 install -m 644 %{SOURCE40} %{buildroot}/etc/cron.d/ut2k4server
 install -m 644 %{SOURCE43} %{buildroot}/etc/sudoers.d/ut2k4server
 install -m 644 %{SOURCE41} %{buildroot}/etc/sysconfig/ut2k4server.env
-#install -m 644 %{SOURCE42} %{buildroot}/usr/lib/systemd/system/ut2k4server.service
 install -m 644 %{SOURCE45} %{buildroot}/usr/lib/systemd/system/ut2k4server@.service
 install -m 644 %{SOURCE44} %{buildroot}/usr/lib/firewalld/services/ut2k4server.xml
 
@@ -386,6 +382,11 @@ exit 0
 
 
 %changelog
+* Fri Jan 6 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-11
+- lgsm_getplayersfromlog.sh now does the sensible thing: show the log filtered through sort -u
+- finally made lgsm_getupdate and lgsm_restart-when-needed work better with the new dynamic systemd service files (tf2server@.service and ut2k4server@.service) . Update your /etc/sysconfig/tf2server.env file(s)!
+- Happy new year!
+
 * Mon Dec 26 2022 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-10
 - fixed tf2server-specific problems during updating once again, including rpm_script_t, rpm-t and crond_t related troubles
 - finally finished the utils packages (lgsm-utils, lgsm-tf2server-utils, lgsm-ut2k4server-utils)

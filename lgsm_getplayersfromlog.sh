@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ## defaults:
+SVCGAME="tf2server"
 SVCNAME="tf2server"
 SVCUSER="tf2server"
 SVCDIR="/opt/$SVCNAME"
@@ -12,6 +13,11 @@ PLAYERSERVERLOGS="l*.log"
 PLAYERFAKENAMES="(BLU|config_bot|ThePyroOverlord|<BOT>)"
 PLAYERLOGFILE="$SVCLOGDIR/${SVCNAME}_player.log"
 PLAYERLASTLOGSEEN="$SVCLOGDIR/${SVCNAME}_player.lastlogfileseen.log"
+
+
+
+# automatically created
+SYSDSVCNAME="$SVCGAME@$SVCNAME"
 
 
 usage() {
@@ -39,7 +45,7 @@ logme() {
 DOIT=0
 [ "x$1" == "xdoit" ] && DOIT=1
 if [ "x$DOIT" == "x0" ]; then
-  ENVFILE="/etc/sysconfig/$1"
+  ENVFILE="/etc/sysconfig/$1.env"
   if [ -e "$ENVFILE" ]; then
     source $ENVFILE
     [ "x$2" == "xdoit" ] && DOIT=1
@@ -53,6 +59,10 @@ fi
 
 if [ "x$1" == "-h" ] || [ "x$1" == "--help" ]; then
   usage
+fi
+
+if [ "x$UID" == "x0" ]; then				# make sure our files are as server-username, so lgsm update doesnt fail to restart the server.
+  chown $SVCUSER:$SVCUSER $PLAYERLOGFILE $PLAYERLASTLOGSEEN >/dev/null 2>&1
 fi
 
 if [ "x$2" == "xshowit" ]; then
@@ -109,5 +119,11 @@ for fn in $SVCLOGDIR/$PLAYERSERVERLOGS; do
 done
 
 [ "x$DOIT" == "x1" ] && echo "$fn" >$PLAYERLASTLOGSEEN
+
+
+if [ "x$UID" == "x0" ]; then				# make sure our files are as server-username, so lgsm update doesnt fail to restart the server.
+  chown $SVCUSER:$SVCUSER $PLAYERLOGFILE $PLAYERLASTLOGSEEN $PLAYERUPDPATELOGFILE >/dev/null 2>&1
+fi
+
 
 logme "#fin"
