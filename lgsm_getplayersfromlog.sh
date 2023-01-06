@@ -56,7 +56,7 @@ if [ "x$1" == "-h" ] || [ "x$1" == "--help" ]; then
 fi
 
 if [ "x$2" == "xshowit" ]; then
-  cat $PLAYERLOGFILE
+  cat $PLAYERLOGFILE | sort -u
   exit 0
 fi
 
