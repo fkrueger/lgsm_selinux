@@ -66,7 +66,7 @@ if [ "x$UID" == "x0" ]; then				# make sure our files are as server-username, so
 fi
 
 if [ "x$2" == "xshowit" ]; then
-  cat $PLAYERLOGFILE | sort -u
+  cat $PLAYERLOGFILE | sed -E 's/^L ([0-9]+)\/([0-9]+)\/([0-9]+) /LOG \3-\1-\2 /g' | sort -u
   exit 0
 fi
 
