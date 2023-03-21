@@ -1,4 +1,4 @@
-policy_module(ut2k4server, 20211208.1.1)
+policy_module(ut2k4server, 20230321.1.1)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -92,7 +92,7 @@ corenet_port(ut2k4server_port_t)
 
 
 ## ut2004-bin/ucc-bin network stuff:
-allow ut2k4server_t self:tcp_socket { bind connect create getattr listen read setopt write };
+allow ut2k4server_t self:tcp_socket { accept bind connect create getattr listen read setopt write };
 allow ut2k4server_t self:udp_socket { bind connect create getattr getopt read setopt write };
 allow ut2k4server_t ut2k4server_port_t:tcp_socket name_bind;
 allow ut2k4server_t ut2k4server_port_t:udp_socket name_bind;
