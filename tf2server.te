@@ -1,4 +1,4 @@
-policy_module(tf2server, 20230106.1.1)
+policy_module(tf2server, 20230106.1.3)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -433,6 +433,7 @@ search_dirs_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
 list_dirs_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
 read_lnk_files_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
 getattr_files_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
+allow system_cronjob_t tf2server_steamcmd_t:file execmod;
 
 # crond_t:
 search_dirs_pattern(crond_t, tf2server_all_types, tf2server_all_types)
@@ -453,7 +454,9 @@ mmap_read_files_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_t
 
 
 # rpm_script_t
+list_dirs_pattern(rpm_script_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
 read_files_pattern(rpm_script_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
+exec_files_pattern(rpm_script_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
 
 
 
