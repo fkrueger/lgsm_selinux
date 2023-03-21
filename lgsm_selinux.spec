@@ -23,7 +23,7 @@
 
 Name: lgsm
 Version: 1.0
-Release: 11%{?dist}
+Release: 13%{?dist}
 Summary: SELinux base policy module for LGSM-based servers
 BuildRequires: policycoreutils, selinux-policy-devel
 
@@ -382,6 +382,13 @@ exit 0
 
 
 %changelog
+* Thu Mar 21 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-13
+- tf2server: a few new permissions were missing for executing steamsdk_t as system_cronjob_t and rpm_script_t
+- ut2k4server: added tcp talking to masterservers support.. somehow this one only showed up once the selinux-testservers at ut2k4.holics.at stopped used an opensource master server. and yes, fu epic for disabling the masterservers. :-(
+
+* Sat Jan 7 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-12
+- fixed lgsm_getplayersfromlog output format to be easily sortable
+
 * Fri Jan 6 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-11
 - lgsm_getplayersfromlog.sh now does the sensible thing: show the log filtered through sort -u
 - finally made lgsm_getupdate and lgsm_restart-when-needed work better with the new dynamic systemd service files (tf2server@.service and ut2k4server@.service) . Update your /etc/sysconfig/tf2server.env file(s)!
