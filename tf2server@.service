@@ -11,6 +11,7 @@ WorkingDirectory=/opt/%i
 RemainAfterExit=yes
 ExecStart=/opt/%i/tf2server start
 ExecStop=/opt/%i/tf2server stop
+TimeoutStartSec=30
 Restart=no
 
 [Install]

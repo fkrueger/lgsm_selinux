@@ -11,6 +11,7 @@ WorkingDirectory=/opt/%i
 RemainAfterExit=yes
 ExecStart=/opt/%i/ut2k4server start
 ExecStop=/opt/%i/ut2k4server stop
+TimeoutStartSec=30
 Restart=no
 
 [Install]
