@@ -1,4 +1,4 @@
-policy_module(tf2server, 20230106.1.3)
+policy_module(tf2server, 20230106.1.4)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -145,6 +145,10 @@ allow tf2server_t self:unix_stream_socket connectto;
 allow tf2server_t tf2server_port_t:{ tcp_socket udp_socket } { name_bind name_connect };
 allow tf2server_t tf2server_t:{ tcp_socket udp_socket } { read write};
 
+
+## XXX technically tf2server wants to use kernel_request_load_module(tf2server_t), but it seems to run without it, so we leave it out for security reasons.
+#kernel_request_load_module(tf2server_t)
+##
 
 
 ########################################

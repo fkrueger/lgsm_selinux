@@ -1,4 +1,4 @@
-policy_module(lgsm, 20230106.1.1)
+policy_module(lgsm, 20230106.1.2)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -37,6 +37,8 @@ require {
   type irqbalance_t;
   type kernel_t;
   type kdump_t, kdumpctl_t;
+  type kmod_t;
+  type mount_t;
   type policykit_t;
   type postfix_cleanup_t, postfix_master_t, postfix_pickup_t, postfix_qmgr_t, postfix_smtp_t;
   type proc_t;
@@ -50,6 +52,7 @@ require {
   type tmp_t, tmpfs_t;
   type tuned_t;
   type udev_t;
+  type unconfined_dbusd_t;
   type unconfined_service_t;
   type var_t, var_run_t;
 }
@@ -75,7 +78,7 @@ type lgsm_tmp_t;
 define(`lgsm_all_types',`{ lgsm_t lgsm_backup_t lgsm_cfg_t lgsm_data_t lgsm_exec_t lgsm_func_t lgsm_home_dir_t lgsm_home_t lgsm_lock_dir_t lgsm_lock_t lgsm_log_t lgsm_misc_t lgsm_serverfiles_t lgsm_t lgsm_tmp_dir_t lgsm_tmp_t }')
 define(`lgsm_relabeler_types',`{ setfiles_t system_cronjob_t crond_t unconfined_t rpm_script_t }')
 
-define(`lgsm_ss_dontaudit_types',`NetworkManager_t NetworkManager_unit_file_t auditd_t auditd_unit_file_t cgroup_t chronyd_t chronyd_unit_file_t crond_t efivarfs_t firewalld_t firewalld_unit_file_t gssproxy_t getty_t getty_unit_file_t init_t irqbalance_t kdump_t kdumpctl_t kernel_t policykit_t postfix_cleanup_t postfix_master_t postfix_pickup_t postfix_qmgr_t postfix_smtp_t proc_t rhsmcertd_t rpcbind_t rpcd_t rpm_t rngd_t sshd_t sshd_net_t sshd_unit_file_t system_cronjob_t systemd_hostnamed_t systemd_logind_var_run_t systemd_passwd_var_run_t systemd_passwd_agent_t systemd_passwd_agent_exec_t systemd_systemctl_exec_t sssd_t sssd_unit_file_t sysfs_t syslogd_t syslogd_unit_file_t system_dbusd_t systemd_logind_t tuned_t udev_t unconfined_t unconfined_service_t')
+define(`lgsm_ss_dontaudit_types',`NetworkManager_t NetworkManager_unit_file_t auditd_t auditd_unit_file_t cgroup_t chronyd_t chronyd_unit_file_t crond_t efivarfs_t firewalld_t firewalld_unit_file_t gssproxy_t getty_t getty_unit_file_t init_t irqbalance_t kdump_t kdumpctl_t kernel_t kmod_t mount_t policykit_t postfix_cleanup_t postfix_master_t postfix_pickup_t postfix_qmgr_t postfix_smtp_t proc_t rhsmcertd_t rpcbind_t rpcd_t rpm_t rngd_t sshd_t sshd_net_t sshd_unit_file_t system_cronjob_t systemd_hostnamed_t systemd_logind_var_run_t systemd_passwd_var_run_t systemd_passwd_agent_t systemd_passwd_agent_exec_t systemd_systemctl_exec_t sssd_t sssd_unit_file_t sysfs_t syslogd_t syslogd_unit_file_t system_dbusd_t systemd_logind_t tuned_t udev_t unconfined_t unconfined_dbusd_t unconfined_service_t')
 
 
 
@@ -262,7 +265,9 @@ manage_files_pattern(lgsm_t, lgsm_cfg_t, lgsm_cfg_t)
 
 search_dirs_pattern(lgsm_t, lgsm_data_t, lgsm_data_t)
 list_dirs_pattern(lgsm_t, lgsm_data_t, lgsm_data_t)
+manage_dirs_pattern(lgsm_t, lgsm_data_t, lgsm_data_t)
 read_files_pattern(lgsm_t, lgsm_data_t, lgsm_data_t)
+manage_files_pattern(lgsm_t, lgsm_data_t, lgsm_data_t)
 
 search_dirs_pattern(lgsm_t, lgsm_func_t, lgsm_func_t)
 list_dirs_pattern(lgsm_t, lgsm_func_t, lgsm_func_t)
@@ -320,8 +325,12 @@ dontaudit lgsm_t { lgsm_ss_dontaudit_types }:dir search_dir_perms;
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:dir list_dir_perms;
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:file read_file_perms;
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:lnk_file read_lnk_file_perms;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:netlink_kobject_uevent_socket getattr;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:netlink_selinux_socket getattr;
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:service manage_service_perms;
 dontaudit lgsm_t { lgsm_ss_dontaudit_types }:process getattr;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:unix_dgram_socket getattr;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:unix_stream_socket getattr;
 
 
 # XXX more ss BS

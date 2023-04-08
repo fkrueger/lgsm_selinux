@@ -14,6 +14,7 @@
 /opt/tf2server(-[0-9]+)?/serverfiles/tf/addons/[^/]+/bin/.*\.so				gen_context(system_u:object_r:tf2server_tf_addons_execmod_t,s0)
 /opt/tf2server(-[0-9]+)?/serverfiles/tf/addons/[^/]+/data/sqlite/clientprefs-sqlite.sq3	gen_context(system_u:object_r:tf2server_tf_addons_rw_t,s0)
 /opt/tf2server(-[0-9]+)?/serverfiles/tf/addons/[^/]+/extensions/[^/]+\.so		gen_context(system_u:object_r:tf2server_tf_addons_execmod_t,s0)
+/opt/tf2server(-[0-9]+)?/serverfiles/tf/addons/[^/]+/extensions/x64/[^/]+\.so		gen_context(system_u:object_r:tf2server_tf_addons_execmod_t,s0)
 /opt/tf2server(-[0-9]+)?/serverfiles/tf/addons/[^/]+/logs?	-d			gen_context(system_u:object_r:tf2server_tf_addons_log_t,s0)
 /opt/tf2server(-[0-9]+)?/serverfiles/tf/addons/[^/]+/logs?/.*				gen_context(system_u:object_r:tf2server_tf_addons_log_t,s0)
 /opt/tf2server(-[0-9]+)?/serverfiles/tf/addons/[^/]+/[^/]+/.*				gen_context(system_u:object_r:tf2server_tf_addons_t,s0)

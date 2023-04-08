@@ -1,4 +1,4 @@
-policy_module(ut2k4server, 20230321.1.1)
+policy_module(ut2k4server, 20230321.1.2)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -129,6 +129,11 @@ read_files_pattern(ut2k4server_t, ut2k4server_maps_t, ut2k4server_maps_t)
 
 list_dirs_pattern(ut2k4server_t, ut2k4server_music_t, ut2k4server_music_t)
 read_files_pattern(ut2k4server_t, ut2k4server_music_t, ut2k4server_music_t)
+
+# XXX ut2k4server_serverfiles_t isn't used in .fc but somehow ends up on some logfiles, which trigger error message while find is being run on those dirs. whose files should be ut2k4server_misc_t, but are only after a restorecon.. weird. allowing for now.
+getattr_dirs_pattern(ut2k4server_t, ut2k4server_serverfiles_t, ut2k4server_serverfiles_t)
+list_dirs_pattern(ut2k4server_t, ut2k4server_serverfiles_t, ut2k4server_serverfiles_t)
+getattr_files_pattern(ut2k4server_t, ut2k4server_serverfiles_t, ut2k4server_serverfiles_t)
 
 list_dirs_pattern(ut2k4server_t, ut2k4server_sounds_t, ut2k4server_sounds_t)
 read_files_pattern(ut2k4server_t, ut2k4server_sounds_t, ut2k4server_sounds_t)
