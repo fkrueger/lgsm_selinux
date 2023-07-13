@@ -8,4 +8,5 @@
   <port port="6788" protocol="udp"/>
   <port port="10677" protocol="udp"/>
   <port port="6075" protocol="tcp"/>
+  <port port="8065" protocol="tcp"/>
 </service>

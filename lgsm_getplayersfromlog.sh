@@ -7,8 +7,9 @@ SVCUSER="tf2server"
 SVCDIR="/opt/$SVCNAME"
 
 SVCLOGDIR="$SVCDIR/log/server"
+GETPLAYERSLOGFILE="$SVCDIR/${SVCNAME}-lgsm_getplayersfromlog.log"
 
-PLAYERSEARCHIE="entered the game"
+PLAYERSEARCHIE="(entered the game|disconnected)"
 PLAYERSERVERLOGS="l*.log"
 PLAYERFAKENAMES="(BLU|config_bot|ThePyroOverlord|<BOT>)"
 PLAYERLOGFILE="$SVCLOGDIR/${SVCNAME}_player.log"
@@ -36,7 +37,7 @@ usage() {
 logme() {
   TS=`date +%Y%m%d_%H%M%S`
   if [ "x$DOIT" == "x1" ]; then
-    echo "$TS: $*" >>$PLAYERLOGFILE
+    echo "$TS: $*" >>$GETPLAYERSLOGFILE
   else
     echo "$TS: $*"
   fi
@@ -62,7 +63,7 @@ if [ "x$1" == "-h" ] || [ "x$1" == "--help" ]; then
 fi
 
 if [ "x$UID" == "x0" ]; then				# make sure our files are as server-username, so lgsm update doesnt fail to restart the server.
-  chown $SVCUSER:$SVCUSER $PLAYERLOGFILE $PLAYERLASTLOGSEEN >/dev/null 2>&1
+  chown $SVCUSER:$SVCUSER $GETPLAYERSLOGFILE $PLAYERLOGFILE $PLAYERLASTLOGSEEN >/dev/null 2>&1
 fi
 
 if [ "x$2" == "xshowit" ]; then
@@ -101,7 +102,7 @@ fi
 ###
 
 [ "x$DOIT" == "x0" ] && PLAYERLOGFILE="/dev/stdout"
-logme "# grabbing player names: grep \"$PLAYERSEARCHIE\" $SVCLOGDIR/$PLAYERSERVERLOGS |grep -vP "$PLAYERFAKENAMES" | sort -u"
+logme "# grabbing player names: grep -P \"$PLAYERSEARCHIE\" $SVCLOGDIR/$PLAYERSERVERLOGS |grep -vP "$PLAYERFAKENAMES" | sort -u"
 for fn in $SVCLOGDIR/$PLAYERSERVERLOGS; do
   fn="${fn##*/}"
   if [ "x$lastlogfound" == "x0" ]; then
@@ -114,7 +115,7 @@ for fn in $SVCLOGDIR/$PLAYERSERVERLOGS; do
 
   if [ "x$lastlogfound" == "x1" ]; then
     echo ">> parsing log $fn:"
-    grep "$PLAYERSEARCHIE" $SVCLOGDIR/$fn |grep -vP "$PLAYERFAKENAMES" | sort -u >>$PLAYERLOGFILE
+    grep -P "$PLAYERSEARCHIE" $SVCLOGDIR/$fn |grep -vP "$PLAYERFAKENAMES" | sort -u >>$PLAYERLOGFILE
   fi
 done
 

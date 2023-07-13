@@ -23,7 +23,7 @@
 
 Name: lgsm
 Version: 1.0
-Release: 13%{?dist}
+Release: 19%{?dist}
 Summary: SELinux base policy module for LGSM-based servers
 BuildRequires: policycoreutils, selinux-policy-devel
 
@@ -52,6 +52,7 @@ Source41: ut2k4server.env
 Source45: ut2k4server@.service
 Source43: ut2k4server.sudoers
 Source44: ut2k4server.xml
+Source46: ut2k4server-2.xml
 Source50: lgsm_getplayersfromlog.sh
 Source51: lgsm_checkupdate.sh
 Source52: lgsm_restart-when-needed.sh
@@ -111,6 +112,7 @@ install -m 644 %{SOURCE43} %{buildroot}/etc/sudoers.d/ut2k4server
 install -m 644 %{SOURCE41} %{buildroot}/etc/sysconfig/ut2k4server.env
 install -m 644 %{SOURCE45} %{buildroot}/usr/lib/systemd/system/ut2k4server@.service
 install -m 644 %{SOURCE44} %{buildroot}/usr/lib/firewalld/services/ut2k4server.xml
+install -m 644 %{SOURCE46} %{buildroot}/usr/lib/firewalld/services/ut2k4server-2.xml
 
 
 %build
@@ -180,7 +182,7 @@ exit 0
 %package -n lgsm-tf2server_selinux
 #Name: lgsm-tf2server_selinux
 #Version: 1.0
-#Release: 9%{?dist}
+#Release: 10%{?dist}
 Summary: SELinux sub policy module for tf2server-support
 BuildRequires: policycoreutils, selinux-policy-devel
 Requires: lgsm_selinux
@@ -377,11 +379,34 @@ exit 0
 %attr(0644,root,root) /etc/sudoers.d/ut2k4server
 %attr(0644,root,root) /etc/sysconfig/ut2k4server.env
 %attr(0644,root,root) /usr/lib/firewalld/services/ut2k4server.xml
+%attr(0644,root,root) /usr/lib/firewalld/services/ut2k4server-2.xml
 %attr(0644,root,root) /usr/lib/systemd/system/ut2k4server@.service
 
 
 
 %changelog
+* Thu Jul 13 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-19
+- tf2server: selinux - fixed missing tf2server_tmp_dir_t create permissions
+- lgsm: utils - fixed lgsm-restart_when_needed.sh in case service is used instead of systemctl; utils - lgsm-restart_when_needed.sh is now being called by cron every 30 minutes 
+
+* Sat Jun 3 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-18
+- tf2server: fixed allow_coredumps_in_tmp sebool
+
+* Mon May 29 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-17
+- lgsm: lgsm added a new lgsm-subdir ./lgsm/modules/ . added toggleable support for it, when it needs writing-capabilities. if lgsm-update fails, execute 'setsebool lgsm_allow_major_update on' and restart the server. then disable it again.
+- ut2k4server: added additional firewalld-service-definition for a 2nd server that runs on different (default-ish) portsets
+
+* Fri May 12 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-16
+- tf2server: allow system_cronjob_t to run updater that needs execmod on tf2server_bin_execmod_t
+- lgsm: allow lgsm_to connectto and read/write to system_cronjob_t:unix_socket_files
+
+* Wed May 3 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-15
+- tf2server: fs_getattr_xattr_fs(..) was needed to access root fs _attributes_
+
+* Sat Apr 8 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-14
+- lgsm / tf2server / ut2k4server: fixed lgsm firstsetup weirdness (and maybe linux distro changes on-the-fly)
+- tf2server / ut2k4server: added TimeoutStartSec=30 to both SystemD unit files, because lgsm's file-checking can take longer than SystemD is willing to wait (by default).
+
 * Thu Mar 21 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-13
 - tf2server: a few new permissions were missing for executing steamsdk_t as system_cronjob_t and rpm_script_t
 - ut2k4server: added tcp talking to masterservers support.. somehow this one only showed up once the selinux-testservers at ut2k4.holics.at stopped used an opensource master server. and yes, fu epic for disabling the masterservers. :-(

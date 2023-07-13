@@ -9,6 +9,7 @@
 /opt/[^/]+server(-[0-9]+)?/lgsm/(config-[^/]+|mods)(/.*)?                                 gen_context(system_u:object_r:lgsm_cfg_t,s0)
 /opt/[^/]+server(-[0-9]+)?/lgsm/data(/.*)?                                                gen_context(system_u:object_r:lgsm_data_t,s0)
 /opt/[^/]+server(-[0-9]+)?/lgsm/functions(/.*)?                                           gen_context(system_u:object_r:lgsm_func_t,s0)
+/opt/[^/]+server(-[0-9]+)?/lgsm/modules(/.*)?                                             gen_context(system_u:object_r:lgsm_func_t,s0)
 /opt/[^/]+server(-[0-9]+)?/lgsm                           -d                              gen_context(system_u:object_r:lgsm_home_t,s0)
 /opt/[^/]+server(-[0-9]+)?/log                            -d                              gen_context(system_u:object_r:lgsm_log_t,s0)
 /opt/[^/]+server(-[0-9]+)?/log/console(/.*)?                                              gen_context(system_u:object_r:lgsm_log_t,s0)

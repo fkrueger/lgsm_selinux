@@ -118,16 +118,16 @@ if [ "x$?" == "x0" ]; then 			# if found:
   logme ". tf2server instance with name '$SVCNAME' (in svcdir $SVCDIR): Found message 'server needs to be started'.. Trigger restart:"
   if [ -x "/usr/sbin/service" ]; then
     if [ "x$DOIT" == "x0" ]; then
-      logme ".. Would now restart instance $SVCNAME via service, but DOIT=$DOIT .. Skipping."
+      logme ".. Would now restart instance $SYSDSVCNAME via service, but DOIT=$DOIT .. Skipping."
     else
       logme ".. Stopping instance $SVCNAME via service:"
-      /usr/sbin/service $SVCNAME stop
+      /usr/sbin/service $SYSDSVCNAME stop
       logme ".. Starting instance $SVCNAME via service:"
-      /usr/sbin/service $SVCNAME start
+      /usr/sbin/service $SYSDSVCNAME start
       RC=99
-      /usr/sbin/service $SVCNAME status
+      /usr/sbin/service $SYSDSVCNAME status
       if [ "x$?" == "x0" ]; then
-        logme ".. Service $SVCNAME seems to have been successfully restarted (according to service)"
+        logme ".. Service $SYSDSVCNAME seems to have been successfully restarted (according to service)"
         RC=0
       fi
     fi
