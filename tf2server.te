@@ -1,4 +1,4 @@
-policy_module(tf2server, 20230512.1.5)
+policy_module(tf2server, 20230512.1.6)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -15,7 +15,7 @@ require {
   type machineid_t;
   type rpm_t, rpm_script_t;
   type system_cronjob_t, system_cronjob_tmp_t;
-  type systemd_coredump_t, system_dbusd_var_lib_t;
+  type systemd_coredump_t, system_dbusd_var_lib_t, systemd_tmpfiles_t;
   type setfiles_t;
   type unconfined_t, unconfined_service_t;
   class dir { add_name create getattr search write };
@@ -265,6 +265,7 @@ manage_files_pattern(tf2server_t, tf2server_other_rw_t, tf2server_other_rw_t)
 list_dirs_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_t)
 read_files_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_t)
 rw_files_pattern(tf2server_t,   tf2server_steamapps_t, tf2server_steamapps_t)
+allow tf2server_t tf2server_steamapps_t:file map;
 
 list_dirs_pattern(tf2server_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
 read_files_pattern(tf2server_t, tf2server_steamcmd_t,  tf2server_steamcmd_t)
@@ -466,6 +467,9 @@ getattr_files_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_typ
 read_files_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_types)
 mmap_read_files_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_types)
 
+### systemd_tmpfiles_t support:
+list_dirs_pattern(systemd_tmpfiles_t,systemd_tmpfiles_t,tf2server_tmp_t)
+getattr_files_pattern(systemd_tmpfiles_t,systemd_tmpfiles_t,tf2server_tmp_t)
 
 # rpm_script_t
 list_dirs_pattern(rpm_script_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
