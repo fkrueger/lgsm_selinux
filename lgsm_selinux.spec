@@ -23,7 +23,7 @@
 
 Name: lgsm
 Version: 1.0
-Release: 19%{?dist}
+Release: 20%{?dist}
 Summary: SELinux base policy module for LGSM-based servers
 BuildRequires: policycoreutils, selinux-policy-devel
 
@@ -385,6 +385,10 @@ exit 0
 
 
 %changelog
+* Thu Jul 16 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-20
+- tf2server/lgsm: selinux changes necessary because of RHEL selinux changes
+- tf2server: cron table sanitized, so we now try to update and restart the tf2server only every 6 hours, starting at 2:15/2:20 . lgsm mods-update always "updates", on every run. weird. but it causes the lgsm_checkupdate.sh to restart the tf2server every time. TODO check for text-output of force-update instead of rc, and disregard mods-update rc or output to not more than one restart per day
+
 * Thu Jul 13 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-19
 - tf2server: selinux - fixed missing tf2server_tmp_dir_t create permissions
 - lgsm: utils - fixed lgsm-restart_when_needed.sh in case service is used instead of systemctl; utils - lgsm-restart_when_needed.sh is now being called by cron every 30 minutes 
