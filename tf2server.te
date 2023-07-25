@@ -1,4 +1,4 @@
-policy_module(tf2server, 20230512.1.6)
+policy_module(tf2server, 20230512.1.7)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -468,8 +468,9 @@ read_files_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_types)
 mmap_read_files_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_types)
 
 ### systemd_tmpfiles_t support:
-list_dirs_pattern(systemd_tmpfiles_t,systemd_tmpfiles_t,tf2server_tmp_t)
-getattr_files_pattern(systemd_tmpfiles_t,systemd_tmpfiles_t,tf2server_tmp_t)
+list_dirs_pattern(systemd_tmpfiles_t,tf2server_tmp_,tf2server_tmp_t)
+getattr_files_pattern(systemd_tmpfiles_t,tf2server_tmp_t,tf2server_tmp_t)
+manage_files_pattern(systemd_tmpfiles_t,tf2server_tmp_t,tf2server_tmp_t)
 
 # rpm_script_t
 list_dirs_pattern(rpm_script_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
