@@ -1,0 +1,483 @@
+policy_module(lgsm, 20230512.2.4)
+
+# vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
+
+
+require {
+  type ifconfig_t;
+  type ifconfig_exec_t;
+  type logrotate_t;
+  type proc_net_t;
+  type rpm_script_t;
+  type system_cronjob_t;
+  type systemd_coredump_t;
+  type systemd_tmpfiles_t;
+  type setfiles_t;
+  type unconfined_t;
+
+  class dir { add_name create getattr search write };
+  class file { create getattr write };
+  class fifo_file rw_fifo_file_perms;
+  class unix_dgram_socket create_stream_socket_perms;
+  class unix_stream_socket create_stream_socket_perms;
+  class tcp_socket { name_bind };
+  #class tcp_socket { name_connect };
+  class udp_socket { name_bind };
+  #class udp_socket { name_connect };
+
+  # for dontaudits:
+  attribute systemd_unit_file_type;
+  type NetworkManager_t, NetworkManager_unit_file_t;
+  type auditd_t, auditd_unit_file_t;
+  type cgroup_t;
+  type chronyd_t, chronyd_unit_file_t;
+  type crond_t;
+  type efivarfs_t;
+  type firewalld_t, firewalld_unit_file_t;
+  type getty_t, getty_unit_file_t;
+  type gssproxy_t;
+  type init_t, init_var_run_t;
+  type irqbalance_t;
+  type kernel_t;
+  type kdump_t, kdumpctl_t;
+  type kmod_t;
+  type mount_t;
+  type policykit_t;
+  type postfix_bounce_t, postfix_cleanup_t, postfix_master_t, postfix_pickup_t, postfix_qmgr_t, postfix_smtp_t;
+  type proc_t;
+  type rhsmcertd_t, rngd_t;
+  type rpcbind_t, rpcd_t;
+  type sshd_t, sshd_net_t, sshd_unit_file_t;
+  type system_dbusd_t, systemd_hostnamed_t, systemd_logind_t, systemd_logind_var_run_t, systemd_passwd_var_run_t, systemd_passwd_agent_t, systemd_passwd_agent_exec_t, systemd_systemctl_exec_t;
+  type sssd_t, sssd_unit_file_t;
+  type sysfs_t;
+  type syslogd_t, syslogd_unit_file_t;
+  type tmp_t, tmpfs_t;
+  type tuned_t;
+  type udev_t;
+  type unconfined_dbusd_t;
+  type unconfined_service_t;
+  type var_t, var_run_t;
+}
+
+type lgsm_t;
+type lgsm_backup_t;
+type lgsm_cfg_t;
+type lgsm_data_t;
+type lgsm_exec_t;
+type lgsm_func_t;
+type lgsm_home_dir_t;
+type lgsm_home_t;
+type lgsm_lock_dir_t;
+type lgsm_lock_t;
+type lgsm_log_t;
+type lgsm_misc_t;
+type lgsm_serverfiles_t;
+type lgsm_tmp_dir_t;
+type lgsm_tmp_t;
+
+
+
+define(`lgsm_all_types',`{ lgsm_t lgsm_backup_t lgsm_cfg_t lgsm_data_t lgsm_exec_t lgsm_func_t lgsm_home_dir_t lgsm_home_t lgsm_lock_dir_t lgsm_lock_t lgsm_log_t lgsm_misc_t lgsm_serverfiles_t lgsm_t lgsm_tmp_dir_t lgsm_tmp_t }')
+define(`lgsm_relabeler_types',`{ setfiles_t system_cronjob_t crond_t unconfined_t rpm_script_t }')
+
+define(`lgsm_ss_dontaudit_types',`NetworkManager_t NetworkManager_unit_file_t auditd_t auditd_unit_file_t cgroup_t chronyd_t chronyd_unit_file_t crond_t efivarfs_t firewalld_t firewalld_unit_file_t gssproxy_t getty_t getty_unit_file_t init_t irqbalance_t kdump_t kdumpctl_t kernel_t kmod_t mount_t policykit_t postfix_bounce_t postfix_cleanup_t postfix_master_t postfix_pickup_t postfix_qmgr_t postfix_smtp_t proc_t rhsmcertd_t rpcbind_t rpcd_t rpm_t rngd_t sshd_t sshd_net_t sshd_unit_file_t system_cronjob_t systemd_hostnamed_t systemd_logind_var_run_t systemd_passwd_var_run_t systemd_passwd_agent_t systemd_passwd_agent_exec_t systemd_systemctl_exec_t sssd_t sssd_unit_file_t sysfs_t syslogd_t syslogd_unit_file_t system_dbusd_t systemd_logind_t tuned_t udev_t unconfined_t unconfined_dbusd_t unconfined_service_t')
+
+
+
+#### XXX load ONLY if ut2k4server policy is installed as well.. and add type bla; definition above:
+define(`ut2k4server_all_types', `')
+define(`ut2k4server_loadedname', `')
+optional_policy(`
+    ut2k4server_set_loadedname(lgsm_t)
+    ut2k4server_lgsmconnect(lgsm_t)
+    ut2k4server_can_exec(lgsm_t)
+    ## XXX the lgsm script likes to scan the *server dirs to make sure there are no files/dirs owned by anyone other than the *server user
+    allow lgsm_t ut2k4server_all_types:dir getattr_dir_perms;
+    list_dirs_pattern(lgsm_t, ut2k4server_all_types, ut2k4server_all_types)
+    read_files_pattern(lgsm_t, ut2k4server_all_types, ut2k4server_all_types)
+')
+#### /ut2k4server policy
+
+
+
+#### XXX load ONLY if tf2 policy is installed as well.. and add type bla; definition above:
+define(`tf2server_all_types', `')
+define(`tf2server_loadedname', `')
+optional_policy(`
+    tf2server_set_loadedname(lgsm_t)
+    tf2server_lgsmconnect(lgsm_t)
+    tf2server_can_exec(lgsm_t)
+    tf2server_allow_logfilehandling(lgsm_t)
+    ## XXX the lgsm script likes to scan the *server dirs to make sure there are no files/dirs owned by anyone other than the *server user
+    allow lgsm_t tf2server_all_types:dir getattr_dir_perms;
+    list_dirs_pattern(lgsm_t, tf2server_all_types, tf2server_all_types)
+    read_files_pattern(lgsm_t, tf2server_all_types, tf2server_all_types)
+')
+#### /tf2server policy
+
+
+
+
+
+
+
+
+## debug script:
+# echo "XX0"; audit2allow -Ri /var/log/audit/audit.log   > /root/x; vi /root/x
+# echo "XX1"; make -f /usr/share/selinux/devel/Makefile
+# echo "XX2"; semodule -r lgsm
+# echo "XX3"; semodule -i /root/selinux/lgsm-release/lgsm.pp ; restorecon -vR /opt/ /home/
+# echo "XX4"; service ut2k4server stop; rm -f /var/log/audit/audit.log ; service auditd restart; service ut2k4server start
+##
+
+
+## init + proc trans
+allow init_t lgsm_home_dir_t:dir search;
+init_daemon_domain(lgsm_t, lgsm_exec_t)
+fs_associate(lgsm_all_types)
+
+####permissive lgsm_t;
+
+rpm_domtrans(lgsm_t)
+lgsm_allow_fileaccess(rpm_t)
+
+domtrans_pattern(system_cronjob_t, lgsm_func_t, lgsm_t)
+
+## for checking for lgsm updates?
+corenet_tcp_connect_http_port(lgsm_t)
+
+allow lgsm_t self:netlink_generic_socket { bind create getattr setopt };
+allow lgsm_t self:netlink_tcpdiag_socket { read write };
+allow lgsm_t self:netlink_route_socket { bind create getattr nlmsg_read setopt };
+allow lgsm_t self:netlink_tcpdiag_socket { bind create getattr nlmsg_read setopt };
+allow lgsm_t self:process { getattr setcap };
+allow lgsm_t self:tcp_socket { connect create getattr getopt setopt };
+allow lgsm_t self:udp_socket { connect create getattr setopt };
+
+allow lgsm_t lgsm_t:netlink_generic_socket { read write };
+allow lgsm_t lgsm_t:netlink_route_socket { read write };
+allow lgsm_t lgsm_t:tcp_socket { read write };
+allow lgsm_t lgsm_t:udp_socket { read write };
+
+#read_files_pattern(lgsm_t, proc_net_t, proc_net_t)
+
+allow lgsm_t system_cronjob_t:unix_stream_socket { connectto getattr read write };
+
+
+
+## XXX in case we have more than one server instance running on the same machine, we (might) need this:
+getattr_dirs_pattern(lgsm_t, unconfined_t, unconfined_t)
+
+optional_policy(`
+  gen_require(`type tf2server_loadedname; ')
+  lgsm_allow_servertype(tf2server_loadedname)
+')
+
+optional_policy(`
+  gen_require(`type ut2k4server_loadedname; ')
+  lgsm_allow_servertype(ut2k4server_loadedname)
+')
+
+
+tunable_policy(`lgsm_allow_major_update',`
+  manage_files_pattern(lgsm_t, lgsm_func_t, lgsm_func_t)
+', `')
+
+## <desc>
+## <p>
+## Allow Calibre general (SElinux) manage - access to all user_home_dir_t / user home dirs. (NOT RECOMMENDED!)
+## - Only needed when you want to have the 'Calibre Library' in your user home dir.
+## </p>
+## </desc>
+gen_tunable(lgsm_allow_major_update, false)
+
+
+
+
+
+
+
+
+
+
+## normal stuff:
+
+auth_read_passwd(lgsm_t)
+
+
+## for running yum/dnf to install missing dependencies of lgsm:
+files_list_kernel_modules(lgsm_t)
+files_manage_generic_tmp_files(lgsm_t)
+fs_getattr_cgroup(lgsm_t)
+gpg_exec(lgsm_t)
+kernel_dgram_send(lgsm_t)
+logging_write_syslog_pid_socket(lgsm_t)
+miscfiles_read_generic_certs(lgsm_t)
+rpm_exec(lgsm_t)
+rpm_manage_db(lgsm_t)
+rpm_read_cache(lgsm_t)
+sssd_run_stream_connect(lgsm_t)
+sssd_stream_connect(lgsm_t)
+
+## for logging in:
+init_read_state(lgsm_t)
+init_read_utmp(lgsm_t)
+
+## for running bash with exec_no_trans:
+corecmd_exec_bin(lgsm_t)
+corecmd_exec_shell(lgsm_t)
+corecmd_shell_entry_type(lgsm_t)
+
+## lgsm script use curl to check for stuff:
+sysnet_read_config(lgsm_t)
+userdom_list_user_home_dirs(lgsm_t)
+
+## lgsm script use find to check for stuff (accessing fs_t):
+fs_getattr_xattr_fs(lgsm_t)
+
+## lgsm script use ss to check for bound ports:
+sysnet_exec_ifconfig(lgsm_t)
+
+## lgsm script use whoami to check for uid/gid/etc. (corecmd_mmap_bin_files, sssd_search_lib are used by yum/dnf above also):
+corecmd_mmap_bin_files(lgsm_t)
+sssd_read_public_files(lgsm_t)
+sssd_search_lib(lgsm_t)
+
+## lgsm script uses any number of utilities working with tmp_t stuff:
+userdom_manage_tmp_dirs(lgsm_t)
+userdom_manage_tmp_files(lgsm_t)
+userdom_manage_tmp_sockets(lgsm_t)
+
+## lgsm script uses tmux for screen-like server console:
+screen_exec(lgsm_t)
+term_getattr_pty_fs(lgsm_t)
+term_use_generic_ptys(lgsm_t)
+term_use_ptmx(lgsm_t)
+allow lgsm_t self:unix_dgram_socket create_stream_socket_perms;
+allow lgsm_t self:unix_stream_socket connectto;
+## lgsm script needs the following during update-lgsm mode
+userdom_use_inherited_user_ptys(lgsm_t)
+
+
+## lgsm looks up stuff in sysfs_t (cpu, dmi, ..)
+dev_list_sysfs(lgsm_t)
+dev_read_sysfs(lgsm_t)
+
+## lgsm_t access to steamcmd related directories in user homedir ~/.local/share/  (Steam, etc.)
+gnome_manage_data(lgsm_t)
+gnome_read_generic_data_home_dirs(lgsm_t)
+userdom_manage_user_home_content_dirs(lgsm_t)
+userdom_read_user_home_content_symlinks(lgsm_t)
+
+
+## lgsm_t access to lgsm - types
+search_dirs_pattern(lgsm_t, lgsm_backup_t, lgsm_backup_t)
+list_dirs_pattern(lgsm_t, lgsm_backup_t, lgsm_backup_t)
+manage_dirs_pattern(lgsm_t, lgsm_backup_t, lgsm_backup_t)
+read_files_pattern(lgsm_t, lgsm_backup_t, lgsm_backup_t)
+manage_files_pattern(lgsm_t, lgsm_backup_t, lgsm_backup_t)
+
+search_dirs_pattern(lgsm_t, lgsm_cfg_t, lgsm_cfg_t)
+list_dirs_pattern(lgsm_t, lgsm_cfg_t, lgsm_cfg_t)
+read_files_pattern(lgsm_t, lgsm_cfg_t, lgsm_cfg_t)
+manage_files_pattern(lgsm_t, lgsm_cfg_t, lgsm_cfg_t)
+
+search_dirs_pattern(lgsm_t, lgsm_data_t, lgsm_data_t)
+list_dirs_pattern(lgsm_t, lgsm_data_t, lgsm_data_t)
+manage_dirs_pattern(lgsm_t, lgsm_data_t, lgsm_data_t)
+read_files_pattern(lgsm_t, lgsm_data_t, lgsm_data_t)
+manage_files_pattern(lgsm_t, lgsm_data_t, lgsm_data_t)
+
+search_dirs_pattern(lgsm_t, lgsm_func_t, lgsm_func_t)
+list_dirs_pattern(lgsm_t, lgsm_func_t, lgsm_func_t)
+read_files_pattern(lgsm_t, lgsm_func_t, lgsm_func_t)
+exec_files_pattern(lgsm_t, lgsm_func_t, lgsm_func_t)
+
+search_dirs_pattern(lgsm_t, lgsm_home_dir_t, lgsm_home_dir_t)
+list_dirs_pattern(lgsm_t, lgsm_home_dir_t, lgsm_home_dir_t)
+getattr_files_pattern(lgsm_t, lgsm_home_dir_t, lgsm_home_dir_t)
+
+search_dirs_pattern(lgsm_t, lgsm_home_t, lgsm_home_t)
+list_dirs_pattern(lgsm_t, lgsm_home_t, lgsm_home_t)
+
+search_dirs_pattern(lgsm_t, lgsm_lock_t, lgsm_lock_t)
+list_dirs_pattern(lgsm_t, lgsm_lock_t, lgsm_lock_t)
+manage_dirs_pattern(lgsm_t, lgsm_lock_t, lgsm_lock_t)
+read_files_pattern(lgsm_t, lgsm_lock_t, lgsm_lock_t)
+manage_files_pattern(lgsm_t, lgsm_lock_t, lgsm_lock_t)
+
+search_dirs_pattern(lgsm_t, lgsm_log_t, lgsm_log_t)
+list_dirs_pattern(lgsm_t, lgsm_log_t, lgsm_log_t)
+manage_dirs_pattern(lgsm_t, lgsm_log_t, lgsm_log_t)
+read_files_pattern(lgsm_t, lgsm_log_t, lgsm_log_t)
+read_lnk_files_pattern(lgsm_t, lgsm_log_t, lgsm_log_t)
+manage_files_pattern(lgsm_t, lgsm_log_t, lgsm_log_t)
+manage_lnk_files_pattern(lgsm_t, lgsm_log_t, lgsm_log_t)
+
+getattr_files_pattern(lgsm_t, lgsm_misc_t, lgsm_misc_t)
+getattr_lnk_files_pattern(lgsm_t, lgsm_misc_t, lgsm_misc_t)
+list_dirs_pattern(lgsm_t, lgsm_misc_t, lgsm_misc_t)
+
+search_dirs_pattern(lgsm_t, lgsm_serverfiles_t, lgsm_serverfiles_t)
+list_dirs_pattern(lgsm_t, lgsm_serverfiles_t, lgsm_serverfiles_t)
+
+search_dirs_pattern(lgsm_t, lgsm_tmp_dir_t, lgsm_tmp_dir_t)
+list_dirs_pattern(lgsm_t, lgsm_tmp_dir_t, lgsm_tmp_dir_t)
+manage_dirs_pattern(lgsm_t, lgsm_tmp_dir_t, lgsm_tmp_dir_t)
+
+## tmp_t and lgsm_tmp_t stuff
+type_transition lgsm_t tmp_t:{ dir file lnk_file sock_file } lgsm_tmp_t;
+
+list_dirs_pattern(lgsm_t, lgsm_tmp_t, lgsm_tmp_t)
+manage_dirs_pattern(lgsm_t, lgsm_tmp_t, { lgsm_tmp_t lgsm_tmp_dir_t })
+read_files_pattern(lgsm_t, lgsm_tmp_t, { lgsm_tmp_t lgsm_tmp_dir_t })
+manage_files_pattern(lgsm_t, lgsm_tmp_t, { lgsm_tmp_t lgsm_tmp_dir_t })
+manage_sock_files_pattern(lgsm_t, lgsm_tmp_t, { lgsm_tmp_t lgsm_tmp_dir_t })
+getattr_sock_files_pattern(systemd_tmpfiles_t, tmp_t, lgsm_tmp_t)
+getattr_sock_files_pattern(systemd_tmpfiles_t, lgsm_tmp_t, lgsm_tmp_t)
+# XXX allow systemd_tmpfiles_t to handle/remove 10d (by default) old tmux dirs. servers should be restarted daily anyhow.
+search_dirs_pattern(systemd_tmpfiles_t, lgsm_tmp_t, lgsm_tmp_t)
+list_dirs_pattern(systemd_tmpfiles_t, lgsm_tmp_t, lgsm_tmp_t)
+manage_dirs_pattern(systemd_tmpfiles_t, lgsm_tmp_t, lgsm_tmp_t)
+
+dontaudit systemd_tmpfiles_t lgsm_tmp_t:sock_file manage_sock_file_perms;
+
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:dir search_dir_perms;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:dir list_dir_perms;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:file read_file_perms;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:lnk_file read_lnk_file_perms;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:netlink_kobject_uevent_socket getattr;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:netlink_selinux_socket getattr;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:service manage_service_perms;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:process getattr;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:unix_dgram_socket getattr;
+dontaudit lgsm_t { lgsm_ss_dontaudit_types }:unix_stream_socket getattr;
+
+
+# XXX more ss BS
+dontaudit lgsm_t kernel_t:system module_request;
+
+
+## lgsm script checks /proc/ for uptime and tf2server processes, and there is also kernel_list_proc needed
+kernel_list_proc(lgsm_t)
+read_files_pattern(lgsm_t, proc_t, proc_t)
+###dontaudit lgsm_t { proc_t }:file read_file_perms;
+
+#kernel_read_state(lgsm_t)
+
+## dont allow proc_net_t stuff
+kernel_dontaudit_search_network_state(lgsm_t)
+dontaudit lgsm_t proc_net_t:{ file lnk_file sock_file } read_file_perms;
+
+
+init_reload_services(lgsm_t)
+##dontaudit lgsm_t init_t:system reload;
+
+##systemd_exec_systemctl(lgsm_t)
+corecmd_search_bin(lgsm_t)
+#fs_list_cgroup_dirs(lgsm_t)
+dontaudit lgsm_t tmpfs_t:dir search_dir_perms;
+#systemd_list_unit_dirs(lgsm_t)
+dontaudit lgsm_t { var_t var_lib_t }:dir search_dir_perms;
+dontaudit lgsm_t systemd_unit_file_type:dir list_dir_perms;
+#init_list_pid_dirs(lgsm_t)
+dontaudit lgsm_t init_var_run_t:dir list_dir_perms;
+#init_stream_send(lgsm_t)
+dontaudit lgsm_t init_t:unix_stream_socket sendto;
+#init_stream_connect(lgsm_t)
+dontaudit lgsm_t { var_t var_run_t }:lnk_file read_lnk_file_perms;
+dontaudit lgsm_t { init_var_run_t var_t var_run_t }:dir search_dir_perms;
+dontaudit lgsm_t init_var_run_t:sock_file write_sock_file_perms;
+dontaudit lgsm_t init_t:unix_stream_socket { connectto getattr };
+#systemd_login_list_pid_dirs(lgsm_t)
+dontaudit lgsm_t { var_t var_run_t }:dir search_dir_perms;
+dontaudit lgsm_t { var_t var_run_t }:lnk_file read_lnk_file_perms;
+#systemd_login_read_pid_files(lgsm_t)
+dontaudit lgsm_t { var_t var_run_t }:dir search_dir_perms;
+dontaudit lgsm_t { var_t var_run_t }:lnk_file read_lnk_file_perms;
+#systemd_passwd_agent_exec(lgsm_t)
+dontaudit lgsm_t systemd_passwd_agent_exec_t:file { mmap_exec_file_perms ioctl lock execute_no_trans };
+#systemd_manage_passwd_run(lgsm_t)
+dontaudit lgsm_t init_var_run_t:dir search_dir_perms;
+dontaudit lgsm_t systemd_passwd_var_run_t:file manage_file_perms;
+dontaudit lgsm_t systemd_passwd_var_run_t:sock_file manage_sock_file_perms;
+dontaudit lgsm_t systemd_passwd_var_run_t:dir rw_dir_perms;
+dontaudit lgsm_t systemd_passwd_var_run_t:fifo_file manage_fifo_file_perms;
+dontaudit systemd_passwd_agent_t lgsm_t:process signull;
+dontaudit systemd_passwd_agent_t lgsm_t:unix_dgram_socket sendto;
+##term_getattr_pty_fs(lgsm_t)
+dontaudit lgsm_t devpts_t:filesystem getattr;
+##unconfined_t stuff in /proc/
+dontaudit lgsm_t unconfined_t:dir search;
+dontaudit lgsm_t unconfined_t:file { open read };
+dontaudit lgsm_t unconfined_t:process getattr;
+dontaudit lgsm_t unconfined_t:{ tcp_socket udp_socket } getattr;
+
+
+
+
+
+
+
+### setfiles_t (ie. restorecon):
+list_dirs_pattern(setfiles_t, lgsm_all_types, lgsm_all_types)
+
+# logrotate:
+search_dirs_pattern(logrotate_t, lgsm_all_types, lgsm_all_types)
+list_dirs_pattern(logrotate_t, lgsm_all_types, lgsm_all_types)
+manage_dirs_pattern(logrotate_t, lgsm_all_types, lgsm_all_types)
+
+### system_cronjob_t update support:
+# XXX this is only to allow our own scripts to play with the lgsm-folders and processes. may need to become more open XXX TODO
+search_dirs_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
+list_dirs_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
+manage_dirs_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
+getattr_files_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
+read_files_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
+manage_files_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
+manage_lnk_files_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
+manage_sock_files_pattern(system_cronjob_t, lgsm_all_types, lgsm_all_types)
+
+### systemd_coredump_t update support:
+list_dirs_pattern(systemd_coredump_t, lgsm_all_types, lgsm_all_types)
+getattr_files_pattern(systemd_coredump_t, lgsm_all_types, lgsm_all_types)
+read_files_pattern(systemd_coredump_t, lgsm_all_types, lgsm_all_types)
+mmap_read_files_pattern(systemd_coredump_t, lgsm_all_types, lgsm_all_types)
+
+
+### all necessary access for unconfined_t
+getattr_dirs_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
+list_dirs_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
+manage_dirs_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
+exec_files_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
+manage_files_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
+manage_lnk_files_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
+manage_sock_files_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
+
+
+## selinux-relabelers-support:
+list_dirs_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+getattr_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+getattr_chr_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+getattr_fifo_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+getattr_lnk_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+getattr_sock_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+
+# relabelfrom:
+relabelfrom_dirs_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+relabelfrom_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+relabelfrom_chr_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+relabelfrom_fifo_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+relabelfrom_lnk_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+relabelfrom_sock_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+
+# relabelto:
+relabelto_dirs_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+relabelto_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+relabelto_chr_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+relabelto_fifo_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+relabelto_lnk_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+relabelto_sock_files_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
+
+

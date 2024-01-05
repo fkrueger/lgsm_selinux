@@ -1,0 +1,515 @@
+policy_module(tf2server, 20230512.2.4)
+
+# vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
+
+########################################
+#
+# Declarations
+#
+
+require {
+  type crond_t;
+  type ifconfig_t;
+  type ifconfig_exec_t;
+  type logrotate_t;
+  type machineid_t;
+  type rpm_t, rpm_script_t;
+  type system_cronjob_t, system_cronjob_tmp_t;
+  type systemd_coredump_t, system_dbusd_var_lib_t, systemd_tmpfiles_t;
+  type setfiles_t;
+  type unconfined_t, unconfined_service_t;
+  class dir { add_name create getattr search write };
+  class file { create getattr write };
+  class fifo_file rw_fifo_file_perms;
+	class sock_file rw_sock_file_perms;
+  class unix_dgram_socket create_stream_socket_perms;
+  class unix_stream_socket create_stream_socket_perms;
+  class tcp_socket { name_bind name_connect };
+#  class tcp_socket { name_connect };			# only exists in EL8 selinux, but not EL9
+  class udp_socket { name_bind name_connect };
+#  class udp_socket { name_connect };			# only exists in EL8 selinux, but not EL9
+}
+
+
+
+type tf2server_t;
+type tf2server_exec_t;
+type tf2server_devpts_t;
+type tf2server_home_t;
+type tf2server_home_dir_t;
+type tf2server_bin_t;
+type tf2server_bin_execmod_t;
+type tf2server_log_t;
+type tf2server_other_t;
+type tf2server_other_bin_t;
+type tf2server_other_dir_t;
+type tf2server_other_rw_t;
+type tf2server_steamapps_t;
+type tf2server_steamapps_bin_t;
+type tf2server_steamapps_workshop_t;
+type tf2server_steamcmd_t;
+type tf2server_steamcmd_sdk_t;
+type tf2server_steamcmd_local_t;
+type tf2server_steamcmd_local_log_t;
+type tf2server_tf_bin_t;
+type tf2server_tf_bin_execmod_t;
+type tf2server_tf_addons_t;
+type tf2server_tf_addons_dir_t;
+type tf2server_tf_addons_execmod_t;
+type tf2server_tf_addons_log_t;
+type tf2server_tf_addons_rw_t;
+type tf2server_tf_cfg_t;
+type tf2server_tf_cfg_dir_t;
+type tf2server_tf_cfg_sourcemod_t;
+type tf2server_tf_custom_t;
+type tf2server_tf_download_t;
+type tf2server_tf_downloadlists_t;
+type tf2server_tf_maps_t;
+type tf2server_tmp_dir_t;
+type tf2server_tmp_t;
+
+
+define(`tf2server_all_types',`{ tf2server_t tf2server_exec_t tf2server_devpts_t tf2server_home_t tf2server_home_dir_t tf2server_bin_t tf2server_bin_execmod_t tf2server_log_t tf2server_other_t tf2server_other_bin_t tf2server_other_dir_t tf2server_other_rw_t tf2server_steamapps_t tf2server_steamapps_bin_t tf2server_steamapps_workshop_t tf2server_steamcmd_t tf2server_steamcmd_sdk_t tf2server_steamcmd_local_t tf2server_steamcmd_local_log_t tf2server_tf_bin_t tf2server_tf_bin_execmod_t tf2server_tf_addons_t tf2server_tf_addons_dir_t tf2server_tf_addons_execmod_t tf2server_tf_addons_log_t tf2server_tf_addons_rw_t tf2server_tf_cfg_t tf2server_tf_cfg_dir_t tf2server_tf_cfg_sourcemod_t tf2server_tf_custom_t tf2server_tf_download_t tf2server_tf_downloadlists_t tf2server_tf_maps_t tf2server_tmp_dir_t tf2server_tmp_t }')
+
+define(`tf2server_relabeler_types',`{ rpm_t rpm_script_t setfiles_t system_cronjob_t system_cronjob_tmp_t unconfined_t unconfined_service_t }')
+
+
+
+## tf2server_t gets access to some of the lgsm dirs (lgsm has the "root dir" of the tf2server-instance, so we need some reading rights)
+optional_policy(`
+  lgsm_allow_fileaccess(tf2server_t)
+')
+
+
+## <desc>
+## <p>
+## Allow tf2-server to write its coredumps into system /tmp
+## </p>
+## </desc>
+gen_tunable(tf2server_allow_coredumps_in_tmp, false)
+
+tunable_policy(`tf2server_allow_coredumps_in_tmp',`
+  manage_dirs_pattern(tf2server_t,tf2server_tmp_t,tf2server_tmp_t)
+  manage_files_pattern(tf2server_t,tf2server_tmp_t,tf2server_tmp_t)
+  files_manage_generic_tmp_dirs(tf2server_t)
+',`
+  dontaudit tf2server_t tmp_t:file manage_file_perms;
+  dontaudit tf2server_t tmp_t:dir manage_dir_perms;
+  dontaudit tf2server_t tf2server_tmp_dir_t:dir manage_dir_perms;
+  dontaudit tf2server_t tf2server_tmp_t:dir manage_dir_perms;
+  dontaudit tf2server_t tf2server_tmp_t:file manage_file_perms;
+')
+
+## XXX do not allow coredumps to be written into tmp_t kinda contexts:
+#dontaudit tf2server_t tmp_t:file manage_file_perms;
+#dontaudit tf2server_t tmp_t:dir create;
+##
+
+
+
+
+## debug script:
+# echo "XX0"; audit2allow -Ri /var/log/audit/audit.log   > /root/x; vi /root/x
+# echo "XX1"; make -f /usr/share/selinux/devel/Makefile
+# echo "XX2"; semanage port -d -p udp 27005-27024 ; semanage port -d -p tcp 27005-27024 ; semanage fcontext -d '/home/tf2server(-[0-9]+)?/.local/share/Steam(/.*)?'; semanage fcontext -d '/home/tf2server(-[0-9]+)?/.steam(/.*)?'; semodule -r mytf2server
+# echo "XX3"; semodule -i /root/selinux/mytf2server/mytf2server.pp ; semanage port -a -t tf2server_port_t -p udp 27005-27024 ; semanage port -a -t tf2server_port_t -p tcp 27005-27024 ; semanage fcontext -a -e '/opt/tf2server(-[0-9]+)?/.local/share/Steam(/.*?)' '/home/tf2server(-[0-9]+)?/.local/share/Steam(/.*)?' ; semanage fcontext -a -e '/opt/tf2server(-[0-9]+)?/.steam(/.*)?' '/home/tf2server(-[0-9]+)?/.steam(/.*)?' ; restorecon -vR /opt/tf2server/ /home/tf2server/
+# echo "XX4"; service tf2server stop; rm -f /var/log/audit/audit.log ; service auditd restart; service tf2server start
+##
+
+## XXX home-dir stuff like ~/.steam/ and ~/.local/ must be added manually or by RPM's postinstall section.
+
+
+## init + proc trans
+allow init_t tf2server_home_dir_t:dir search;
+init_daemon_domain(tf2server_t, tf2server_exec_t)
+
+tf2server_can_exec(unconfined_t)
+## XXX "recursive" calling of tf2server_exec_t binary
+tf2server_can_exec(tf2server_t)
+
+fs_associate(tf2server_all_types)
+fs_getattr_xattr_fs(tf2server_t)
+
+## XXX convert devpts_t to our version
+####type_transition tf2server_t devpts_t:file tf2server_devpts_t;
+
+type_transition tf2server_t tmp_t:dir tf2server_tmp_dir_t;
+type_transition tf2server_t tmp_t:file tf2server_tmp_t;
+
+####permissive ut2k4server_t;
+
+
+#kernel_read_all_proc(tf2server_t)
+
+allow tf2server_t self:process { execmem setsched };
+dontaudit tf2server_t self:process ptrace;
+
+allow tf2server_t self:tcp_socket shutdown;
+allow tf2server_t self:netlink_route_socket { bind create getattr nlmsg_read setopt read write };
+allow tf2server_t self:tcp_socket { accept bind connect create getattr getopt listen setopt };
+allow tf2server_t self:udp_socket { bind connect create getattr getopt ioctl setopt };
+#allow tf2server_t tf2server_port_t:tcp_socket name_connect;
+
+# tf2 ports: 27005,27015,27020 -> 27005,27019,27024 (semanage port -a -t tf2server_port_t -p tcp 27005-27024; semanage port -a -t tf2server_port_t -p udp 27005-27024)
+type tf2server_port_t;
+corenet_port(tf2server_port_t)
+
+corenet_udp_bind_generic_port(tf2server_t)
+
+allow tf2server_t self:unix_dgram_socket create_stream_socket_perms;
+allow tf2server_t self:unix_stream_socket connectto;
+#allow tf2server_t tf2server_port_t:{ tcp_socket udp_socket } { name_bind name_connect };
+allow tf2server_t tf2server_port_t:tcp_socket name_connect;
+allow tf2server_t tf2server_port_t:{ tcp_socket udp_socket } { name_bind };
+allow tf2server_t tf2server_t:{ tcp_socket udp_socket } { read write};
+
+
+## XXX technically tf2server wants to use kernel_request_load_module(tf2server_t), but it seems to run without it, so we leave it out for security reasons.
+#kernel_request_load_module(tf2server_t)
+##
+
+
+########################################
+#
+# tf2server local policy
+#
+allow tf2server_t self:fifo_file rw_fifo_file_perms;
+allow tf2server_t self:unix_stream_socket create_stream_socket_perms;
+
+#corenet_tcp_connect_mongod_port(tf2server_t)
+#domain_use_interactive_fds(tf2server_t)
+#files_read_etc_files(tf2server_t)
+#miscfiles_read_localization(tf2server_t)
+
+## XXX because tf2server somehow calls ethtool, which ifconfig_exec_t, and wouldn't be allowed to be call by tf2server_t without the following line:
+#sysnet_domtrans_ifconfig(tf2server_t)
+
+## XXX the following does not work, because we already have our own domtrans_pattern from tmp_t to tf2server_tmp_t, which cant be overridden:
+#ipa_filetrans_named_content(tf2server_t)
+##
+
+
+## home
+manage_files_pattern(tf2server_t, tf2server_home_dir_t, tf2server_home_t)
+read_lnk_files_pattern(tf2server_t, tf2server_home_t, tf2server_home_t)
+rename_dirs_pattern(tf2server_t, tf2server_home_t, tf2server_home_t)
+
+
+## logging
+logging_log_file(tf2server_log_t)
+logging_search_logs(tf2server_log_t)
+#filetrans_pattern(tf2server_t, tf2server_log_t, tf2server_log_t, file)
+read_lnk_files_pattern(tf2server_t, tf2server_log_t, tf2server_log_t)
+rw_files_pattern(tf2server_t, tf2server_log_t, tf2server_log_t)
+manage_files_pattern(tf2server_t, tf2server_log_t, tf2server_log_t)
+
+list_dirs_pattern(tf2server_t, tf2server_bin_t, tf2server_bin_t)
+read_files_pattern(tf2server_t, tf2server_bin_t, tf2server_bin_t)
+read_lnk_files_pattern(tf2server_t, tf2server_bin_t, tf2server_bin_t)
+exec_files_pattern(tf2server_t, tf2server_bin_t, tf2server_bin_t)
+
+list_dirs_pattern(tf2server_t, tf2server_bin_execmod_t, tf2server_bin_execmod_t)
+read_files_pattern(tf2server_t, tf2server_bin_execmod_t, tf2server_bin_execmod_t)
+exec_files_pattern(tf2server_t, tf2server_bin_execmod_t, tf2server_bin_execmod_t)
+
+filetrans_pattern(tf2server_t, tf2server_tf_addons_dir_t, tf2server_tf_addons_t, file)
+getattr_files_pattern(tf2server_t, tf2server_tf_addons_dir_t, tf2server_tf_addons_dir_t)
+read_files_pattern(tf2server_t, tf2server_tf_addons_dir_t, tf2server_tf_addons_dir_t)
+list_dirs_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+manage_files_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_addons_rw_t, tf2server_tf_addons_rw_t)
+rw_dirs_pattern(tf2server_t, tf2server_tf_addons_rw_t, tf2server_tf_addons_rw_t)
+manage_files_pattern(tf2server_t, tf2server_tf_addons_rw_t, tf2server_tf_addons_rw_t)
+
+read_files_pattern(tf2server_t, tf2server_tf_addons_execmod_t, tf2server_tf_addons_execmod_t)
+exec_files_pattern(tf2server_t, tf2server_tf_addons_execmod_t, tf2server_tf_addons_execmod_t)
+search_dirs_pattern(tf2server_t, tf2server_tf_addons_execmod_t, tf2server_tf_addons_execmod_t)
+list_dirs_pattern(tf2server_t, tf2server_tf_addons_execmod_t, tf2server_tf_addons_execmod_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_bin_t, tf2server_tf_bin_t)
+read_files_pattern(tf2server_t, tf2server_tf_bin_t, tf2server_tf_bin_t)
+exec_files_pattern(tf2server_t, tf2server_tf_bin_t, tf2server_tf_bin_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_bin_execmod_t, tf2server_tf_bin_execmod_t)
+read_files_pattern(tf2server_t, tf2server_tf_bin_execmod_t, tf2server_tf_bin_execmod_t)
+exec_files_pattern(tf2server_t, tf2server_tf_bin_execmod_t, tf2server_tf_bin_execmod_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_cfg_t, tf2server_tf_cfg_t)
+read_files_pattern(tf2server_t, tf2server_tf_cfg_t, tf2server_tf_cfg_t)
+read_lnk_files_pattern(tf2server_t, tf2server_tf_cfg_t, tf2server_tf_cfg_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_downloadlists_t, tf2server_tf_downloadlists_t)
+rw_dirs_pattern(tf2server_t, tf2server_tf_downloadlists_t, tf2server_tf_downloadlists_t)
+manage_files_pattern(tf2server_t, tf2server_tf_downloadlists_t, tf2server_tf_downloadlists_t)
+
+# XXX addon configurations to read and write by tf2
+list_dirs_pattern(tf2server_t, tf2server_tf_cfg_sourcemod_t, tf2server_tf_cfg_sourcemod_t)
+rw_dirs_pattern(tf2server_t, tf2server_tf_cfg_sourcemod_t, tf2server_tf_cfg_sourcemod_t)
+manage_files_pattern(tf2server_t, tf2server_tf_cfg_sourcemod_t, tf2server_tf_cfg_sourcemod_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_custom_t, tf2server_tf_custom_t)
+read_files_pattern(tf2server_t, tf2server_tf_custom_t, tf2server_tf_custom_t)
+
+list_dirs_pattern(tf2server_t, tf2server_home_t, tf2server_home_t)
+read_files_pattern(tf2server_t, tf2server_home_t, tf2server_home_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tmp_dir_t, tf2server_tmp_dir_t)
+read_files_pattern(tf2server_t, tf2server_tmp_dir_t, tf2server_tmp_t)
+rw_files_pattern(tf2server_t,   tf2server_tmp_dir_t, tf2server_tmp_t)
+
+allow tf2server_t tf2server_other_t:dir getattr_dir_perms;
+list_dirs_pattern(tf2server_t, tf2server_other_t, tf2server_other_t)
+read_files_pattern(tf2server_t, tf2server_other_t, tf2server_other_t)
+exec_files_pattern(tf2server_t, tf2server_other_t, tf2server_other_t)
+
+list_dirs_pattern(tf2server_t, tf2server_other_bin_t, tf2server_other_bin_t)
+read_files_pattern(tf2server_t, tf2server_other_bin_t, tf2server_other_bin_t)
+exec_files_pattern(tf2server_t, tf2server_other_bin_t, tf2server_other_bin_t)
+
+manage_files_pattern(tf2server_t, tf2server_other_rw_t, tf2server_other_rw_t)
+
+list_dirs_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_t)
+read_files_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_t)
+rw_files_pattern(tf2server_t,   tf2server_steamapps_t, tf2server_steamapps_t)
+allow tf2server_t tf2server_steamapps_t:file map;
+
+list_dirs_pattern(tf2server_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
+read_files_pattern(tf2server_t, tf2server_steamcmd_t,  tf2server_steamcmd_t)
+read_lnk_files_pattern(tf2server_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
+exec_files_pattern(tf2server_t, tf2server_steamcmd_t,  tf2server_steamcmd_t)
+
+list_dirs_pattern(tf2server_t, tf2server_steamcmd_sdk_t, tf2server_steamcmd_sdk_t)
+manage_dirs_pattern(tf2server_t, tf2server_steamcmd_sdk_t, tf2server_steamcmd_sdk_t)
+read_files_pattern(tf2server_t, tf2server_steamcmd_sdk_t,  tf2server_steamcmd_sdk_t)
+read_lnk_files_pattern(tf2server_t, tf2server_steamcmd_sdk_t, tf2server_steamcmd_sdk_t)
+mmap_read_files_pattern(tf2server_t, tf2server_steamcmd_sdk_t, tf2server_steamcmd_sdk_t)
+manage_files_pattern(tf2server_t, tf2server_steamcmd_sdk_t,  tf2server_steamcmd_sdk_t)
+manage_lnk_files_pattern(tf2server_t, tf2server_steamcmd_sdk_t,  tf2server_steamcmd_sdk_t)
+
+list_dirs_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_workshop_t)
+manage_dirs_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_workshop_t)
+manage_files_pattern(tf2server_t, tf2server_steamapps_t, tf2server_steamapps_workshop_t)
+create_files_pattern(tf2server_t, tf2server_steamapps_workshop_t, tf2server_steamapps_workshop_t)
+rw_files_pattern(tf2server_t, tf2server_steamapps_workshop_t, tf2server_steamapps_workshop_t)
+
+list_dirs_pattern(tf2server_t, tf2server_steamcmd_local_t, tf2server_steamcmd_local_t)
+read_files_pattern(tf2server_t, tf2server_steamcmd_local_t, tf2server_steamcmd_local_t)
+
+manage_files_pattern(tf2server_t, tf2server_steamcmd_local_log_t, tf2server_steamcmd_local_log_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+read_files_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+exec_files_pattern(tf2server_t, tf2server_tf_addons_t, tf2server_tf_addons_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_addons_log_t, tf2server_tf_addons_log_t)
+manage_files_pattern(tf2server_t, tf2server_tf_addons_log_t, tf2server_tf_addons_log_t)
+
+list_dirs_pattern(tf2server_t, tf2server_tf_download_t, tf2server_tf_download_t)
+manage_dirs_pattern(tf2server_t, tf2server_tf_download_t, tf2server_tf_download_t)
+manage_files_pattern(tf2server_t, tf2server_tf_download_t, tf2server_tf_download_t)
+rw_files_pattern(tf2server_t, tf2server_tf_download_t, tf2server_tf_download_t)
+
+manage_files_pattern(tf2server_t, tf2server_tf_maps_t, tf2server_tf_maps_t)
+rw_files_pattern(tf2server_t, tf2server_tf_maps_t, tf2server_tf_maps_t)
+
+list_dirs_pattern(tf2server_t, tf2server_steamapps_bin_t, tf2server_steamapps_bin_t)
+read_files_pattern(tf2server_t, tf2server_steamapps_bin_t, tf2server_steamapps_bin_t)
+exec_files_pattern(tf2server_t, tf2server_steamapps_bin_t, tf2server_steamapps_bin_t)
+
+
+list_dirs_pattern(tf2server_t, tf2server_tmp_t, tf2server_tmp_t)
+rw_dirs_pattern(tf2server_t, tf2server_tmp_t, tf2server_tmp_t)
+read_files_pattern(tf2server_t, tf2server_tmp_t, tf2server_tmp_t)
+rw_files_pattern(tf2server_t, tf2server_tmp_t, tf2server_tmp_t)
+
+
+## tmux stuff
+screen_exec(tf2server_t)
+term_use_generic_ptys(tf2server_t)
+term_use_ptmx(tf2server_t)
+
+
+
+
+## XXX the following allows textrelocations -.-
+allow tf2server_t { tf2server_bin_execmod_t tf2server_steamcmd_t tf2server_tf_bin_execmod_t tf2server_tf_addons_execmod_t }:file execmod;
+
+## other stuff
+## srcds_run is a bash script calling other bash scripts, and helpers like dirname
+corecmd_exec_bin(tf2server_t)
+corecmd_check_exec_shell(tf2server_t)
+## srcds_run uses these for updating itself and the game(s):
+corenet_tcp_connect_dns_port(tf2server_t)
+corenet_tcp_connect_http_port(tf2server_t)
+corenet_tcp_connect_unreserved_ports(tf2server_t)
+## srcds_run probably talking to a master-server
+corenet_udp_bind_generic_node(tf2server_t)
+corenet_tcp_bind_generic_node(tf2server_t)
+## srcds_run looks at dbusd version of /etc/machine-id?!
+search_dirs_pattern(tf2server_t, system_dbusd_var_lib_t, system_dbusd_var_lib_t)
+read_lnk_files_pattern(tf2server_t, system_dbusd_var_lib_t, system_dbusd_var_lib_t)
+read_files_pattern(tf2server_t, machineid_t, machineid_t)
+## srcds_run checks for sysfs_t stuff during startup
+dev_list_sysfs(tf2server_t)
+dev_read_sysfs(tf2server_t)
+## srcds_run looks up cpuinfo, meminfo and kernel version in /proc/
+read_files_pattern(tf2server_t, proc_t, proc_t)
+kernel_read_network_state(tf2server_t)
+## srcds_linux checks up the /tmp/dumps/ directory and files to prepare / do core dumps XXX TODO maybe do domtrans from system_cronjob_tmp_t to tf2server_tmp_coredumps_t or something.
+list_dirs_pattern(tf2server_t, system_cronjob_tmp_t, system_cronjob_tmp_t)
+read_files_pattern(tf2server_t, system_cronjob_tmp_t, system_cronjob_tmp_t)
+manage_files_pattern(tf2server_t, system_cronjob_tmp_t, system_cronjob_tmp_t)
+## srcds_run saves temporary shit into the user homedir ~/.local/share/
+files_list_home(tf2server_t)
+gnome_manage_data(tf2server_t)
+gnome_read_generic_data_home_dirs(tf2server_t)
+## SourceMod wants network infos (here: /etc/resolv.conf) to connect to some other sites (probably the SourceMod updater)
+sysnet_read_config(tf2server_t)
+
+#auth_read_passwd(tf2server_t)
+#corecmd_exec_bin(tf2server_t)
+#corecmd_exec_shell(tf2server_t)
+#corenet_tcp_bind_generic_node(tf2server_t)
+#corenet_tcp_connect_dns_port(tf2server_t)
+#corenet_tcp_connect_http_port(tf2server_t)
+#corenet_udp_bind_generic_node(tf2server_t)
+#dbus_read_lib_files(tf2server_t)
+#dev_list_sysfs(tf2server_t)
+#dev_read_sysfs(tf2server_t)
+#files_list_home(tf2server_t)
+#gnome_manage_data(tf2server_t)
+#gnome_read_generic_data_home_dirs(tf2server_t)
+#init_read_state(tf2server_t)
+#init_read_utmp(tf2server_t)
+miscfiles_read_generic_certs(tf2server_t)
+#nis_use_ypbind_uncond(tf2server_t)
+## yum/dnf/rpm
+#rpm_delete_db(tf2server_t)
+#rpm_exec(tf2server_t)
+#rpm_manage_db(tf2server_t)
+## tmux/screen
+#screen_exec(tf2server_t)
+## auth
+#sssd_read_public_files(tf2server_t)
+#sssd_run_stream_connect(tf2server_t)
+#sssd_search_lib(tf2server_t)
+#sssd_stream_connect(tf2server_t)
+## net
+#sysnet_exec_ifconfig(tf2server_t)
+#sysnet_read_config(tf2server_t)
+## virtual terminals / tmux / screen
+#term_getattr_pty_fs(tf2server_t)
+#term_use_generic_ptys(tf2server_t)
+#term_use_ptmx(tf2server_t)
+## tmp files
+userdom_manage_tmp_dirs(tf2server_t)
+userdom_manage_tmp_files(tf2server_t)
+userdom_manage_tmp_sockets(tf2server_t)
+
+# homedir shit.. it sucks.
+#files_manage_usr_files(tf2server_t)
+userdom_list_user_home_dirs(tf2server_t)
+
+# homedir shit, that really sucks.
+userdom_manage_user_home_content_dirs(tf2server_t)
+userdom_read_user_home_content_symlinks(tf2server_t)
+
+# homedir shit, execmod-style..
+list_dirs_pattern(tf2server_t, user_home_t, user_home_t)
+read_files_pattern(tf2server_t, user_home_t, user_home_t)
+read_lnk_files_pattern(tf2server_t, user_home_t, user_home_t)
+exec_files_pattern(tf2server_t, user_home_t, user_home_t)
+allow tf2server_t user_home_t:file execmod;
+
+
+
+
+
+
+### setfiles_t (ie. restorecon):
+list_dirs_pattern(setfiles_t, tf2server_all_types, tf2server_all_types)
+
+
+
+### all necessary access for unconfined_t
+manage_dirs_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+exec_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+manage_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+manage_lnk_files_pattern(unconfined_t, tf2server_all_types, tf2server_all_types)
+allow unconfined_t { tf2server_steamcmd_t tf2server_steamcmd_sdk_t }:file execmod;
+
+# unconfined_service_t: this is only to allow our own scripts to play with the tf2server-folders and processes. may need to become more open XXX TODO
+search_dirs_pattern(unconfined_service_t, tf2server_all_types, tf2server_all_types)
+list_dirs_pattern(unconfined_service_t, tf2server_all_types, tf2server_all_types)
+getattr_files_pattern(unconfined_service_t, tf2server_all_types, tf2server_all_types)
+
+
+# logrotate:
+search_dirs_pattern(logrotate_t, tf2server_all_types, tf2server_all_types)
+list_dirs_pattern(logrotate_t, tf2server_all_types, tf2server_all_types)
+manage_dirs_pattern(logrotate_t, tf2server_all_types, tf2server_all_types)
+
+# system_cronjob_t: this is only to allow our own scripts to play with the tf2server-folders and processes. may need to become more open XXX TODO
+search_dirs_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
+list_dirs_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
+read_lnk_files_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
+getattr_files_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
+manage_lnk_files_pattern(tf2server_t, system_cronjob_tmp_t, system_cronjob_tmp_t)
+setattr_lnk_files_pattern(system_cronjob_t, tf2server_bin_t, tf2server_bin_t)
+setattr_lnk_files_pattern(system_cronjob_t, tf2server_tf_cfg_t, tf2server_tf_cfg_t)
+allow system_cronjob_t { tf2server_steamcmd_t tf2server_bin_execmod_t }:file execmod;
+
+# crond_t:
+search_dirs_pattern(crond_t, tf2server_all_types, tf2server_all_types)
+
+### system_cronjob_t update support:
+search_dirs_pattern(system_cronjob_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
+list_dirs_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
+manage_dirs_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
+getattr_files_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
+exec_files_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
+manage_files_pattern(system_cronjob_t, tf2server_all_types, tf2server_all_types)
+
+### systemd_coredump_t update support:
+list_dirs_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_types)
+getattr_files_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_types)
+read_files_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_types)
+mmap_read_files_pattern(systemd_coredump_t, tf2server_all_types, tf2server_all_types)
+
+### systemd_tmpfiles_t support:
+list_dirs_pattern(systemd_tmpfiles_t,tf2server_tmp_t,tf2server_tmp_t)
+getattr_files_pattern(systemd_tmpfiles_t,tf2server_tmp_t,tf2server_tmp_t)
+manage_files_pattern(systemd_tmpfiles_t,tf2server_tmp_t,tf2server_tmp_t)
+
+# rpm_script_t
+list_dirs_pattern(rpm_script_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
+read_files_pattern(rpm_script_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
+exec_files_pattern(rpm_script_t, tf2server_steamcmd_t, tf2server_steamcmd_t)
+
+
+
+## selinux-relabelers-support:
+list_dirs_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+getattr_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+getattr_chr_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+getattr_fifo_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+getattr_lnk_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+getattr_sock_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+
+# relabelfrom:
+relabelfrom_dirs_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+relabelfrom_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+relabelfrom_fifo_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+relabelfrom_lnk_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+relabelfrom_sock_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+
+# relabelto:
+relabelto_dirs_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+relabelto_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+relabelto_fifo_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+relabelto_lnk_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+relabelto_sock_files_pattern(tf2server_relabeler_types, tf2server_all_types, tf2server_all_types)
+
+
+
