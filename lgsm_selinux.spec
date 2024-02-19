@@ -19,21 +19,36 @@
 %define selinux_ut2k4server_ports_udp 7777-7778 7787-7788 10777 6777-6778 6787-6788 10677
 %define selinux_ut2k4server_dirs /opt/ut2k4server*/ /etc/sysconfig/
 
+%if 0%{?fedora} >= 14
+%define useel9version 1
+%endif
+%if "%{dist}" == ".el7"
+%define useel9version 0
+%endif
+%if "%{dist}" == ".el8"
+%define useel9version 0
+%endif
+%if "%{dist}" == ".el9"
+%define useel9version 1
+%endif
+
 
 
 Name: lgsm
 Version: 1.0
-Release: 20%{?dist}
+Release: 25%{?dist}
 Summary: SELinux base policy module for LGSM-based servers
 BuildRequires: policycoreutils, selinux-policy-devel
 
 Group: System Environment/Base		
 License: GPLv2+	
 URL: https://github.com/fkrueger/lgsm_selinux
-Source0: lgsm.te
+Source0: lgsm.el8.te
+Source6: lgsm.el9.te
 Source1: lgsm.fc
 Source2: lgsm.if
-Source10: tf2server.te
+Source10: tf2server.el8.te
+Source16: tf2server.el9.te
 Source11: tf2server.fc
 Source12: tf2server.if
 Source13: tf2server_selinux.8
@@ -63,8 +78,8 @@ Requires(post): selinux-policy-base >= %{selinux_policyver}, policycoreutils
 Requires(postun): policycoreutils
 BuildArch: noarch
 
-Obsoletes: tf2server_selinux, ut2k4server_selinux
-Conflicts: tf2server_selinux, ut2k4server_selinux
+Obsoletes: tf2server_selinux < 1, ut2k4server_selinux < 1
+Conflicts: tf2server_selinux < 1, ut2k4server_selinux < 1
 
 %description
 This package installs and sets up the SELinux base policy for LGSM-based servers.
@@ -121,7 +136,14 @@ install -m 644 %{SOURCE46} %{buildroot}/usr/lib/firewalld/services/ut2k4server-2
 ## lgsm-ut2k4server_selinux
 TMPB="%{_builddir}/%{name}-%{version}-%{release}.%{_arch}/"
 mkdir -p "$TMPB"
-cp %{SOURCE0} %{SOURCE1} %{SOURCE2} %{SOURCE10} %{SOURCE11} %{SOURCE12} %{SOURCE30} %{SOURCE31} %{SOURCE32} "$TMPB"
+cp %{SOURCE1} %{SOURCE2} %{SOURCE11} %{SOURCE12} %{SOURCE30} %{SOURCE31} %{SOURCE32} "$TMPB"
+%if 0%{useel9version} <= 0
+cp %{SOURCE0} "$TMPB/lgsm.te"
+cp %{SOURCE10} "$TMPB/tf2server.te"
+%else
+cp %{SOURCE6} "$TMPB/lgsm.te"
+cp %{SOURCE16} "$TMPB/tf2server.te"
+%endif
 cd "$TMPB"
 make -f /usr/share/selinux/devel/Makefile
 
@@ -180,14 +202,11 @@ exit 0
 
 
 %package -n lgsm-tf2server_selinux
-#Name: lgsm-tf2server_selinux
-#Version: 1.0
-#Release: 10%{?dist}
 Summary: SELinux sub policy module for tf2server-support
 BuildRequires: policycoreutils, selinux-policy-devel
 Requires: lgsm_selinux
-Obsoletes: tf2server_selinux, ut2k4server_selinux
-Conflicts: tf2server_selinux, ut2k4server_selinux
+Obsoletes: tf2server_selinux < 0, ut2k4server_selinux < 0
+Conflicts: tf2server_selinux < 0, ut2k4server_selinux < 0
 
 Group:	System Environment/Base		
 License:	GPLv2+	
@@ -296,8 +315,8 @@ exit 0
 Summary: SELinux sub policy module for ut2k4server-support
 BuildRequires: policycoreutils, selinux-policy-devel
 Requires: lgsm_selinux
-Obsoletes: tf2server_selinux, ut2k4server_selinux
-Conflicts: tf2server_selinux, ut2k4server_selinux
+Obsoletes: tf2server_selinux < 0, ut2k4server_selinux < 0
+Conflicts: tf2server_selinux < 0, ut2k4server_selinux < 0
 
 Group:	System Environment/Base		
 License:	GPLv2+	
@@ -385,7 +404,22 @@ exit 0
 
 
 %changelog
-* Thu Jul 16 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-20
+* Mon Feb 19 2024 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-25
+- lgsm: added a fix for el9 unconfined_service_t accessing lgsm_tmp_t, that somehow was missed for eons
+
+* Fri Jan 5 2024 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-24
+- lgsm/tf2server: added a fix for el9 system_cronjob_t and unconfined_service_t, that somehow was missed for eons
+
+* Wed Dec 27 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-23
+- lgsm/tf2server: added a fix for el9 selinux policy changes, that were not needed in el8; el8 and el9 policies for lgsm and tf2server have now their own files.
+
+* Fri Sep 22 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-22
+- lgsm: lgsm decided to start using lnk_files, which caused the server to hang in a restart-loop until said lnk_files in the lgsm - log/ subdirectory could be created. wth, dude.
+
+* Wed Jul 26 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-21
+- tf2server: final selinux changes allowing systemd_tmpfiles_t to manage tf2server_tmp_t, as it rightfully should be able to
+
+* Sun Jul 16 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-20
 - tf2server/lgsm: selinux changes necessary because of RHEL selinux changes
 - tf2server: cron table sanitized, so we now try to update and restart the tf2server only every 6 hours, starting at 2:15/2:20 . lgsm mods-update always "updates", on every run. weird. but it causes the lgsm_checkupdate.sh to restart the tf2server every time. TODO check for text-output of force-update instead of rc, and disregard mods-update rc or output to not more than one restart per day
 
@@ -411,7 +445,7 @@ exit 0
 - lgsm / tf2server / ut2k4server: fixed lgsm firstsetup weirdness (and maybe linux distro changes on-the-fly)
 - tf2server / ut2k4server: added TimeoutStartSec=30 to both SystemD unit files, because lgsm's file-checking can take longer than SystemD is willing to wait (by default).
 
-* Thu Mar 21 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-13
+* Tue Mar 21 2023 Frederic Krueger <fkrueger-dev-selinux_tf2server@holics.at> 1.0-13
 - tf2server: a few new permissions were missing for executing steamsdk_t as system_cronjob_t and rpm_script_t
 - ut2k4server: added tcp talking to masterservers support.. somehow this one only showed up once the selinux-testservers at ut2k4.holics.at stopped used an opensource master server. and yes, fu epic for disabling the masterservers. :-(
 

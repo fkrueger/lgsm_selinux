@@ -1,4 +1,4 @@
-policy_module(lgsm, 20230512.2.4)
+policy_module(lgsm, 20230512.2.5)
 
 # vim: softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
@@ -455,6 +455,10 @@ manage_files_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
 manage_lnk_files_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
 manage_sock_files_pattern(unconfined_t, lgsm_all_types, lgsm_all_types)
 
+## unconfined_service_t
+getattr_dirs_pattern(unconfined_service_t, lgsm_tmp_t, lgsm_tmp_t)
+search_dirs_pattern(unconfined_service_t, lgsm_tmp_t, lgsm_tmp_t)
+list_dirs_pattern(unconfined_service_t, lgsm_tmp_t, lgsm_tmp_t)
 
 ## selinux-relabelers-support:
 list_dirs_pattern(lgsm_relabeler_types, lgsm_all_types, lgsm_all_types)
